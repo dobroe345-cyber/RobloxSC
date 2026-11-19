@@ -405,7 +405,7 @@ header{gap:4px;min-height:56px}
           <select id="f_models" class="hidden" style="margin-top:6px"></select></div>
         <div class="f"><label for="s_format">Формат API</label>
           <select id="s_format"><option value="auto">Авто</option><option value="openai">OpenAI-совместимый (/chat/completions)</option><option value="anthropic">Anthropic (/messages)</option></select></div>
-        <details class="f" id="pxBox"><summary style="cursor:pointer;color:var(--muted);padding:6px 0">Прокси — если сайт «работает только через сервер»</summary>
+        <details class="f" id="pxBox"><summary id="pxSum" style="cursor:pointer;padding:10px 12px;border:1px solid var(--line,#8884);border-radius:12px;margin:6px 0">Прокси</summary>
           <input id="p_proxy" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="https://имя.workers.dev/?u={url}" style="margin-top:6px">
           <small>Если проверка пишет про CORS или «Failed to fetch», браузер запретил запрос. Свой бесплатный прокси на Cloudflare Workers решает это: нажмите кнопку ниже, вставьте код в новый Worker, а его адрес с <b>?u={url}</b> впишите сюда. Ключ идёт только через ваш прокси. Пусто = без прокси.</small>
           <button class="b wide" id="cpWorker" style="margin-top:8px">Скопировать код прокси</button></details>
@@ -991,7 +991,7 @@ function buildBody(sl,pf,fmt,hist,tools,sys){
 }
 const errText=j=>{const e=j&&j.error;if(typeof e==='string')return e;return (e&&(e.message||JSON.stringify(e)))||(j&&j.message)||'Ошибка API';};
 async function readError(res){let t=await res.text().catch(()=>'');try{t=errText(JSON.parse(t));}catch(e){}return (`HTTP ${res.status}: ${t||res.statusText}`.slice(0,300))+httpHint(res.status);}
-const netHint=e=>/fetch|Load failed|NetworkError|network/i.test(e.message)?'\nБраузер не смог связаться с сайтом. Частые причины:\n1) сайт не разрешает запросы из браузера (CORS) и работает только через сервер — тогда включите прокси: Настройки → Модель → «Прокси»;\n2) в адресе API указана страница кабинета вместо адреса API (нужно вида https://сайт/v1);\n3) нет сети или мешает VPN.':'';
+const netHint=e=>/fetch|Load failed|NetworkError|network/i.test(e.message)?((S&&S.prefs&&(S.prefs.proxy||'').trim())?'\nПрокси включён, но не ответил. Проверьте:\n1) откройте адрес прокси в браузере (до /p): должно быть «AI Chat proxy: работает»; бесплатный Render просыпается до минуты, повторите;\n2) в поле прокси должно быть …/p?t=ТОКЕН&u={url} без пробелов и лишних символов;\n3) сайт должен быть в ALLOWED_HOSTS на сервере.':'\nБраузер не смог связаться с сайтом. Частые причины:\n1) сайт не разрешает запросы из браузера (CORS) и работает только через сервер — тогда включите прокси: Настройки → Модель → «Прокси»;\n2) в адресе API указана страница кабинета вместо адреса API (нужно вида https://сайт/v1);\n3) нет сети или мешает VPN.'):'';
 const httpHint=s=>s===401?'\nКлюч не принят: проверьте, что ключ скопирован целиком и без пробелов.':s===403?'\nДоступ запрещён: у ключа нет прав на эту модель, нет баланса, либо сайт блокирует запросы из браузера или вашего региона.':s===404?'\nАдрес или модель не найдены: проверьте адрес API (…/v1) и ID модели в списке.':s===429?'\nСлишком много запросов или закончился лимит/баланс на сайте.':s>=500?'\nОшибка на стороне сайта, попробуйте позже.':'';
 // Понимает и поток (SSE), и обычный JSON-ответ; отделяет мысли, текст и вызовы инструментов
 async function readBody(res,cb){
@@ -1900,7 +1900,7 @@ function renderSlots(){
 function fillSlot(){
   const s=dSlot();SEL=s.id;$('s_name').value=s.name;$('s_url').value=s.url;$('s_key').value=s.key;$('s_model').value=s.model;$('s_format').value=s.format;
   $('s_key').type='password';$('eye').innerHTML=ico('eye');$('f_models').classList.add('hidden');setTest('','');renderSlots();
-  $('p_proxy').value=S.prefs.proxy||'';if(S.prefs.proxy)$('pxBox').open=true;
+  $('p_proxy').value=S.prefs.proxy||'';if(S.prefs.proxy)$('pxBox').open=true;pxLabel();
 }
 function flushSlot(){
   const s=dSlot();if(!s)return;
@@ -1948,7 +1948,7 @@ $('testBtn').onclick=async()=>{
   const okMsg=()=>`Работает. ${FMT_NAME[sl.detected]}, адрес:\n${parseUrl(sl.url).base}/${sl.detected==='anthropic'?'messages':'chat/completions'}`;
   try{await callAPI(sl,{maxTokens:64},(fmt)=>buildBody(sl,{maxTokens:64},fmt,[{role:'user',content:'Hi'}],null,''),{text:hit,think:hit},c.signal,false);
     got?setTest(okMsg(),'ok'):setTest('Сервер ответил, но без текста','err');}
-  catch(e){if(e.name==='AbortError'&&got)setTest(okMsg(),'ok');else setTest(e.message,'err');}
+  catch(e){if(e.name==='AbortError'&&got)setTest(okMsg(),'ok');else{setTest(e.message,'err');if(/Load failed|fetch|network/i.test(e.message))$('pxBox').open=true;}}
   save();btn.disabled=false;
 };
 $('loadModels').onclick=async()=>{
@@ -1961,7 +1961,8 @@ $('loadModels').onclick=async()=>{
   }catch(e){toast('Список не загрузился. Впишите ID модели вручную.\n'+e.message);}
   btn.disabled=false;btn.textContent='Список';
 };
-$('p_proxy').addEventListener('input',()=>{S.prefs.proxy=$('p_proxy').value.trim();save();});
+const pxLabel=()=>{const on=!!(S.prefs.proxy||'').trim();$('pxSum').textContent='Прокси: '+(on?'ВКЛЮЧЁН':'ВЫКЛЮЧЕН — нажмите, чтобы настроить');$('pxSum').style.color=on?'#2e9d5b':'#d0453a';};
+$('p_proxy').addEventListener('input',()=>{S.prefs.proxy=$('p_proxy').value.trim();save();pxLabel();});
 $('cpWorker').onclick=async()=>{
   let host='';try{host=new URL(parseUrl(dSlot().url).base).hostname;}catch(e){}
   const code=`// Прокси для AI Chat: пропускает запросы только к одному сайту и добавляет CORS-заголовки
