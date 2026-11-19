@@ -1052,7 +1052,7 @@ async function readBody(res,cb){
       if(j.stop_reason)cb.stop(j.stop_reason);}
   }
 }
-function viaProxy(url){const px=((S&&S.prefs&&S.prefs.proxy)||'').trim();if(!px)return url;return px.includes('{url}')?px.replace('{url}',encodeURIComponent(url)):px.replace(/\/+$/,'')+'/'+url;}
+function viaProxy(url){const px=((S&&S.prefs&&S.prefs.proxy)||'').trim();if(!px)return url;const m=/\{url\}|%7Burl%7D/i;return m.test(px)?px.replace(m,()=>encodeURIComponent(url)):px.replace(/\/+$/,'')+'/'+url;}
 async function callAPI(sl,pf,mk,cb,signal,useTools){
   const {base}=parseUrl(sl.url),errs=[];
   for(const fmt of formats(sl)){
