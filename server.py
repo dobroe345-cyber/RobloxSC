@@ -59,7 +59,14 @@ def proxy():
     if p.hostname.lower() not in ALLOWED_HOSTS:
         return fail(403, "Сайт " + p.hostname + " не разрешён (ALLOWED_HOSTS)")
     headers = {k: v for k, v in request.headers.items() if k.lower() in PASS_REQ}
-    headers["User-Agent"] = "Mozilla/5.0 (compatible; AIChatProxy/1.0)"
+    # передаём сайту настоящий адрес и браузер пользователя (как обычный прокси)
+    client = request.headers.get("X-Forwarded-For", "").split(",")[0].strip() or (request.remote_addr or "")
+    if client:
+        headers["X-Forwarded-For"] = client
+        headers["X-Real-IP"] = client
+    headers["User-Agent"] = request.headers.get("User-Agent") or "Mozilla/5.0 (compatible; AIChatProxy/1.0)"
+    if request.headers.get("Accept-Language"):
+        headers["Accept-Language"] = request.headers["Accept-Language"]
     headers["Accept-Encoding"] = "identity"
     try:
         up = requests.request(request.method, target, data=request.get_data() if request.method == "POST" else None,
