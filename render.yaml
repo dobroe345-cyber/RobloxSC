@@ -10,5 +10,7 @@ services:
         value: tooken.club,anymodel.org
       - key: PROXY_TOKEN
         generateValue: true
+      - key: GITHUB_TOKEN
+        sync: false
       - key: PYTHON_VERSION
         value: 3.11.9

@@ -10,6 +10,8 @@ import requests
 from flask import Flask, Response, request, stream_with_context
 
 app = Flask(__name__)
+from mcp_server import bp as mcp_bp  # MCP-сервер GitHub на /mcp
+app.register_blueprint(mcp_bp)
 
 ALLOWED_HOSTS = {h.strip().lower() for h in os.environ.get("ALLOWED_HOSTS", "").split(",") if h.strip()}
 TOKEN = os.environ.get("PROXY_TOKEN", "")

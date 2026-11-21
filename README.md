@@ -21,3 +21,12 @@ Settings → Pages → Source: Deploy from a branch → Branch `main`, папк�
 Адрес API: `https://tooken.club/v1` (адрес API, а не кабинета). Затем «Проверить подключение».
 
 Бесплатный Render засыпает через 15 минут простоя: первый запрос после паузы идёт ~30–60 секунд.
+
+## 4. MCP-сервер GitHub (`/mcp`)
+Тот же сервис отвечает как MCP-сервер (Streamable HTTP) с инструментами: список репозиториев, файлы, чтение, коммит, запуски Actions, лог сборки, ручной запуск workflow.
+
+1. Render → сервис → Environment → добавить `GITHUB_TOKEN` (токен GitHub, права repo и workflow). `PROXY_TOKEN` уже есть.
+2. В клиенте MCP (например 9brains → Integration hinzufügen → Manueller MCP-Server):
+   - URL: `https://robloxsc.onrender.com/mcp?t=ВАШ_PROXY_TOKEN`
+   - либо URL без `?t=` и заголовок `Authorization: Bearer ВАШ_PROXY_TOKEN`
+   - транспорт: Streamable HTTP
