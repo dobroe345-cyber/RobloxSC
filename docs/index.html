@@ -447,16 +447,20 @@ header{gap:4px;min-height:56px}
         </div>
       </section>
       <section data-p="reply" class="hidden">
+<div class="sec">
         <div class="f"><label for="p_agent">Режим агента</label>
           <select id="p_agent"><option value="1">Включён: ИИ сам правит файлы, запускает превью, играет и делает скриншоты</option><option value="0">Выключен: обычный чат</option></select>
           <small>Нужна модель с поддержкой инструментов (tool use). Если сайт их не принимает, режим выключится сам.</small></div>
         <div class="f"><label for="p_system">Системный промпт</label><textarea id="p_system" placeholder="Необязательно"></textarea></div>
         <div class="f"><label for="p_max">Лимит длины одного ответа (токены)</label><input id="p_max" type="number" inputmode="numeric" min="1"><small>Оборванный ответ дописывается автоматически. Если сайт ругается на лимит, уменьшите число (например, до 8000).</small></div>
         <div class="f"><label for="p_think">Бюджет мышления (токены)</label><input id="p_think" type="number" inputmode="numeric" min="0" placeholder="0 = выключено"><small>Только формат Anthropic, минимум 1024. Сайты в формате OpenAI присылают мысли сами, если поддерживают.</small></div>
+</div>
       </section>
       <section data-p="tab" class="hidden">
+<div class="sec">
         <div class="f"><label for="f_title">Название вкладки</label><input id="f_title"></div>
         <div class="zone"><button class="b" id="zipAll"><svg class="i"><use href="#i-download"/></svg>Все файлы (ZIP)</button><button class="b" id="clearFiles"><svg class="i"><use href="#i-trash"/></svg>Очистить файлы</button><button class="b" id="clearChat"><svg class="i"><use href="#i-trash"/></svg>Очистить чат</button><button class="b danger" id="delTab"><svg class="i"><use href="#i-trash"/></svg>Удалить вкладку</button></div>
+</div>
       </section>
     </div>
     <div class="card-f"><span class="hint" style="margin:0 auto 0 0;align-self:center">Изменения сохраняются сразу</span><button class="b pri" id="saveCfg">Готово</button></div>
