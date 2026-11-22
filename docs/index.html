@@ -72,7 +72,7 @@ header{display:flex;align-items:center;gap:6px;padding:calc(env(safe-area-inset-
 .empty{text-align:center;margin-top:16vh}
 .empty h2{font-family:ui-serif,Georgia,serif;font-weight:400;font-size:30px;margin:10px 0 6px}
 .empty p{color:var(--muted)}
-.spin{animation:rot 2.2s linear infinite;transform-origin:50% 50%}
+.spin{animation:rot 1.6s linear infinite;transform-origin:50% 50%;will-change:transform;backface-visibility:hidden}
 @keyframes rot{to{transform:rotate(360deg)}}
 .live{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);margin:8px 0 2px}
 .live svg{color:var(--accent);flex:none}
@@ -978,21 +978,29 @@ function renderMsgs(){
     d.innerHTML=groupHTML(tab,s,e,busy&&liveTab===tab&&liveMsg===tab.messages[e]);
     box.appendChild(d);i=e;
   }
-  scrollBottom();
+  syncAnim(box);scrollBottom();
 }
 const renderAll=()=>{renderTabs();renderHeader();renderMsgs();renderPanel();};
 const nearBottom=()=>{const m=$('msgs');return m.scrollHeight-m.scrollTop-m.clientHeight<140;};
 const scrollBottom=()=>{const m=$('msgs');m.scrollTop=m.scrollHeight;};
+// анимации не должны начинаться заново при каждой перерисовке: привязываем фазу к общим часам
+function syncAnim(root){
+  const n=performance.now()/1000,d=(p,o)=>(-((n+(o||0))%p)).toFixed(3)+'s';
+  root.querySelectorAll('.spin').forEach(e=>e.style.animationDelay=d(1.6));
+  root.querySelectorAll('.shim').forEach(e=>e.style.animationDelay=d(2));
+  root.querySelectorAll('.tool-h .dot').forEach(e=>e.style.animationDelay=d(1));
+  root.querySelectorAll('.wr i').forEach((e,k)=>e.style.animationDelay=d(1,-(k%3)*.15));
+}
 function paintLive(){
   if(!busy||!liveMsg||cur()!==liveTab)return;
   const tab=liveTab,i=tab.messages.indexOf(liveMsg);if(i<0)return;
   const el=$('wrap').lastElementChild;if(!el||!el.classList.contains('ai'))return;
   const [s,e]=groupRange(tab,i);const nb=nearBottom();
-  el.dataset.s=s;el.dataset.e=e;keepScroll(el,()=>{el.innerHTML=groupHTML(tab,s,e,true);},true);if(nb)scrollBottom();
+  el.dataset.s=s;el.dataset.e=e;keepScroll(el,()=>{el.innerHTML=groupHTML(tab,s,e,true);syncAnim(el);},true);if(nb)scrollBottom();
 }
 function rerender(el,live){
   const tab=cur(),s=+el.dataset.s,e=+el.dataset.e;
-  keepScroll(el,()=>{el.innerHTML=groupHTML(tab,s,e,!!live);},!!live);
+  keepScroll(el,()=>{el.innerHTML=groupHTML(tab,s,e,!!live);syncAnim(el);},!!live);
 }
 function setBusy(b){busy=b;$('send').innerHTML=ico(b?'stop':'send');$('send').setAttribute('aria-label',b?'Остановить':'Отправить');}
 
