@@ -184,7 +184,8 @@ span.chip{cursor:default}
 .badge{font-size:12px;font-weight:500;padding:3px 10px;border-radius:99px;background:var(--hover2);color:var(--muted)}
 .badge.on{background:#2e8b5722;color:#2e8b57}
 .how{margin-top:10px;font-size:13px;color:var(--muted);line-height:1.45}
-.how summary{cursor:pointer;color:var(--accent);font-size:13px;padding:2px 0}
+.how summary{cursor:pointer;color:var(--text);font-size:13px;padding:2px 0}
+.how.bad summary{color:#d0453a}
 .how b{color:var(--text)}
 .slots{margin-bottom:12px}
 .mbox{margin-top:8px;border:1px solid var(--border);border-radius:12px;overflow:hidden}
@@ -474,7 +475,7 @@ header{gap:4px;min-height:56px}
             <div class="row"><input id="gh_tok" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="ghp_… или github_pat_…"><button class="b" id="ghEye" aria-label="Показать токен"><svg class="i"><use href="#i-eye"/></svg></button></div></div>
           <div class="row"><button class="b" id="ghTest" style="flex:1">Войти и проверить</button><button class="b" id="ghOut">Выйти</button></div>
           <div id="ghRes" class="status"></div>
-          <details class="how"><summary>Как получить токен</summary>github.com → Settings → Developer settings → Personal access tokens → Tokens (classic) → отметьте <b>repo</b> и <b>workflow</b>. Токен хранится только в этом браузере.</details>
+          <details class="how" id="ghHow"><summary>Как получить токен</summary>github.com → Settings → Developer settings → Personal access tokens → Tokens (classic) → отметьте <b>repo</b> и <b>workflow</b>. Токен хранится только в этом браузере.</details>
         </div>
         <div class="sec">
           <div class="sec-h"><b>Прокси</b><span class="badge" id="pxBadge">выключен</span></div>
@@ -483,7 +484,7 @@ header{gap:4px;min-height:56px}
             <input id="p_proxy" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="https://имя.onrender.com/p?t=ТОКЕН&u={url}"></div>
           <div class="row"><button class="b" id="pxTest" style="flex:1">Проверить прокси</button><button class="b" id="pxClear">Очистить</button></div>
           <div id="pxRes" class="status"></div>
-          <details class="how"><summary>Подробнее</summary>В адресе должно быть <b>{url}</b>: на его место подставляется адрес сайта. Использовать ли прокси, выбирается в каждом слоте (вкладка «Модель»). Запасной вариант на Cloudflare Workers: <button class="b sm" id="cpWorker" style="margin-top:6px">Скопировать код Worker</button></details>
+          <details class="how" id="pxHow"><summary>Подробнее</summary>В адресе должно быть <b>{url}</b>: на его место подставляется адрес сайта. Использовать ли прокси, выбирается в каждом слоте (вкладка «Модель»). Запасной вариант на Cloudflare Workers: <button class="b sm" id="cpWorker" style="margin-top:6px">Скопировать код Worker</button></details>
         </div>
       </section>
       <section data-p="reply" class="hidden">
@@ -2151,7 +2152,7 @@ function renderSlots(){
 function fillSlot(){
   const s=dSlot();SEL=s.id;$('s_name').value=s.name;$('s_url').value=s.url;$('s_key').value=s.key;$('s_model').value=s.model;$('s_format').value=s.format;
   $('s_key').type='password';$('eye').innerHTML=ico('eye');setList(false);setTest('','');renderSlots();
-  $('s_conn').value=s.noProxy?'direct':'proxy';$('p_proxy').value=S.prefs.proxy||'';pxLabel();$('gh_tok').value=S.prefs.ghToken||'';$('gh_tok').type='password';ghLabel();$('ghRes').textContent='';$('pxRes').textContent='';
+  $('s_conn').value=s.noProxy?'direct':'proxy';$('p_proxy').value=S.prefs.proxy||'';pxLabel();$('gh_tok').value=S.prefs.ghToken||'';$('gh_tok').type='password';ghLabel();$('ghRes').textContent='';$('pxRes').textContent='';bad('ghHow',0);bad('pxHow',0);
 }
 function flushSlot(){
   const s=dSlot();if(!s)return;
@@ -2222,8 +2223,9 @@ $('loadModels').onclick=async()=>{
   }catch(e){toast('Список не загрузился. Впишите ID модели вручную.\n'+e.message);}
   btn.disabled=false;btn.textContent=$('f_models').classList.contains('hidden')?'Список':'Закрыть';
 };
+const bad=(id,v)=>$(id).classList.toggle('bad',!!v);
 const pxLabel=()=>{const on=!!(S.prefs.proxy||'').trim(),b=$('pxBadge');b.textContent=on?'задан':'не задан';b.classList.toggle('on',on);};
-$('p_proxy').addEventListener('input',()=>{S.prefs.proxy=$('p_proxy').value.trim();save();pxLabel();});
+$('p_proxy').addEventListener('input',()=>{bad('pxHow',0);S.prefs.proxy=$('p_proxy').value.trim();save();pxLabel();});
 $('cpWorker').onclick=async()=>{
   let host='';try{host=new URL(parseUrl(dSlot().url).base).hostname;}catch(e){}
   const code=`// Прокси для AI Chat: пропускает запросы только к одному сайту и добавляет CORS-заголовки
@@ -2241,24 +2243,24 @@ return new Response(p.body,{status:p.status,headers:o});}};`;
   toast((await copyText(code))?'Код прокси скопирован. Вставьте его в Cloudflare → Workers → Create → Edit code.':'Не удалось скопировать');
 };
 const ghLabel=()=>{const on=!!GH.tok(),b=$('ghBadge');b.textContent=on?'вход выполнен':'не подключён';b.classList.toggle('on',on);};
-$('gh_tok').addEventListener('input',()=>{S.prefs.ghToken=$('gh_tok').value.trim();save();ghLabel();});
+$('gh_tok').addEventListener('input',()=>{bad('ghHow',0);S.prefs.ghToken=$('gh_tok').value.trim();save();ghLabel();});
 $('ghTest').onclick=async()=>{
   const r=$('ghRes');r.className='status';r.textContent='Проверяю…';
   try{const me=await ghJson('/user');const rp=await ghJson('/user/repos?per_page=100&sort=pushed');
-    r.className='status ok';r.textContent='Вход выполнен: '+me.login+'. Доступно репозиториев: '+rp.length+(rp.length?' (например '+rp.slice(0,3).map(x=>x.name).join(', ')+')':'')+'. Если сборки нужны, у токена должно быть право workflow.';}
-  catch(e){r.className='status err';r.textContent=e.message;}
+    bad('ghHow',0);r.className='status ok';r.textContent='Вход выполнен: '+me.login+'. Доступно репозиториев: '+rp.length+(rp.length?' (например '+rp.slice(0,3).map(x=>x.name).join(', ')+')':'')+'. Если сборки нужны, у токена должно быть право workflow.';}
+  catch(e){bad('ghHow',1);r.className='status err';r.textContent=e.message;}
 };
 $('ghEye').onclick=()=>{const k=$('gh_tok');k.type=k.type==='password'?'text':'password';$('ghEye').innerHTML=ico(k.type==='password'?'eye':'eyeoff');};
 $('pxClear').onclick=()=>{if(!(S.prefs.proxy||'').trim())return;if(!confirm('Стереть адрес прокси?'))return;S.prefs.proxy='';$('p_proxy').value='';save();pxLabel();$('pxRes').textContent='Адрес стёрт.';};
 $('pxTest').onclick=async()=>{
   const r=$('pxRes'),px=(S.prefs.proxy||'').trim();r.className='status';
-  if(!px){r.className='status err';r.textContent='Сначала впишите адрес прокси.';return;}
+  if(!px){bad('pxHow',1);r.className='status err';r.textContent='Сначала впишите адрес прокси.';return;}
   let o='';try{o=new URL(px.replace(/\{url\}|%7Burl%7D/ig,'x')).origin;}catch(e){}
-  if(!o){r.className='status err';r.textContent='Адрес прокси выглядит неверно.';return;}
+  if(!o){bad('pxHow',1);r.className='status err';r.textContent='Адрес прокси выглядит неверно.';return;}
   r.textContent='Проверяю… бесплатный сервер может просыпаться до минуты.';
   const c=new AbortController(),tm=setTimeout(()=>c.abort(),70000);
-  try{await fetch(o+'/',{mode:'no-cors',signal:c.signal,cache:'no-store'});r.className='status ok';r.textContent='Сервер отвечает: '+o;}
-  catch(e){r.className='status err';r.textContent='Сервер не ответил: '+(e.name==='AbortError'?'долго нет ответа':e.message)+'. Проверьте адрес и повторите.';}
+  try{await fetch(o+'/',{mode:'no-cors',signal:c.signal,cache:'no-store'});bad('pxHow',0);r.className='status ok';r.textContent='Сервер отвечает: '+o;}
+  catch(e){bad('pxHow',1);r.className='status err';r.textContent='Сервер не ответил: '+(e.name==='AbortError'?'долго нет ответа':e.message)+'. Проверьте адрес и повторите.';}
   clearTimeout(tm);
 };
 $('ghOut').onclick=()=>{if(!confirm('Выйти из GitHub? Токен будет удалён из браузера.'))return;S.prefs.ghToken='';$('gh_tok').value='';save();ghLabel();$('ghRes').textContent='Токен удалён из браузера.';};
