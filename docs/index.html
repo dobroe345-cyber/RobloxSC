@@ -147,10 +147,10 @@ span.chip{cursor:default}
   border-radius:20px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3)}
 .card-h{display:flex;align-items:center;justify-content:space-between;padding:12px 10px 8px 20px}
 .card-h h3{margin:0;font-size:17px}
-.cats{display:flex;gap:4px;padding:0 14px 10px;border-bottom:1px solid var(--border);overflow-x:auto}
-.cats button{border:0;background:transparent;color:var(--muted);padding:8px 14px;border-radius:10px;font-size:14.5px;cursor:pointer;white-space:nowrap}
-.cats button.on{background:var(--hover2);color:var(--text);font-weight:600}
-.card-b{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 20px 8px;min-height:340px}
+.cats{display:flex;gap:2px;margin:0 16px 4px;padding:3px;background:var(--hover);border-radius:12px;overflow-x:auto}
+.cats button{flex:1;border:0;background:transparent;color:var(--muted);padding:8px 10px;border-radius:9px;font-size:14px;cursor:pointer;white-space:nowrap;justify-content:center}
+.cats button.on{background:var(--card);color:var(--text);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.card-b{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 8px;min-height:300px}
 .card-f{display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--border)}
 .slots{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
 .slots button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 12px;border-radius:10px;font-size:14px;cursor:pointer;max-width:100%;
@@ -163,6 +163,7 @@ span.chip{cursor:default}
   background:var(--card);color:var(--text);font-size:16px;font-family:inherit;-webkit-appearance:none;appearance:none}
 .f input:focus,.f select:focus,.f textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
 .f textarea{resize:vertical;min-height:90px}
+.f select{padding-right:34px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2373726c' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
 .row{display:flex;gap:6px}.row input{flex:1;min-width:0}
 .b{padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:15px;cursor:pointer;white-space:nowrap}
 .b.sm{padding:7px 11px;font-size:13.5px}
@@ -173,6 +174,16 @@ span.chip{cursor:default}
 .status{margin-top:8px;font-size:13.5px;white-space:pre-line;overflow-wrap:anywhere}
 .status.ok{color:#2e8b57}.status.err{color:#d0453a}
 .zone{display:flex;gap:8px;flex-wrap:wrap;padding:6px 0 12px}
+.sec{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:12px}
+.sec .f:last-child{margin-bottom:0}
+.sec-h{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:15px}
+.sec-d{margin:4px 0 12px;font-size:13px;color:var(--muted);line-height:1.4}
+.badge{font-size:12px;font-weight:500;padding:3px 10px;border-radius:99px;background:var(--hover2);color:var(--muted)}
+.badge.on{background:#2e8b5722;color:#2e8b57}
+.how{margin-top:10px;font-size:13px;color:var(--muted);line-height:1.45}
+.how summary{cursor:pointer;color:var(--accent);font-size:13px;padding:2px 0}
+.how b{color:var(--text)}
+.slots{margin-bottom:12px}
 #toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 96px);transform:translateX(-50%);background:#2b2a27;color:#fff;
   padding:10px 16px;border-radius:12px;max-width:90%;font-size:14px;z-index:30;box-shadow:0 6px 20px rgba(0,0,0,.3);white-space:pre-line}
 #scrim{display:none}
@@ -390,33 +401,50 @@ header{gap:4px;min-height:56px}
 <div id="modal" class="hidden">
   <div class="card" role="dialog" aria-labelledby="cfgTitle">
     <div class="card-h"><h3 id="cfgTitle">Настройки</h3><button class="ib" id="closeCfg" aria-label="Закрыть"><svg class="i"><use href="#i-close"/></svg></button></div>
-    <div class="cats" id="cats"><button data-p="model" class="on">Модель</button><button data-p="reply">Ответ</button><button data-p="tab">Вкладка</button></div>
+    <div class="cats" id="cats"><button data-p="model" class="on">Модель</button><button data-p="conn">Подключения</button><button data-p="reply">Ответ</button><button data-p="tab">Вкладка</button></div>
     <div class="card-b">
       <section data-p="model">
         <div class="slots" id="slots"></div>
-        <div class="f"><label for="s_name">Название слота</label><input id="s_name"></div>
-        <div class="f"><label for="s_url">Адрес API</label>
-          <input id="s_url" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="https://site.com/v1">
-          <small>Обычно заканчивается на /v1. Можно вставить и полный адрес …/v1/chat/completions.</small></div>
-        <div class="f"><label for="s_key">Ключ API</label>
-          <div class="row"><input id="s_key" type="password" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="b" id="eye" aria-label="Показать ключ"><svg class="i"><use href="#i-eye"/></svg></button></div></div>
-        <div class="f"><label for="s_model">Модель (ID)</label>
-          <div class="row"><input id="s_model" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="ID модели, как на сайте"><button class="b" id="loadModels">Список</button></div>
-          <select id="f_models" class="hidden" style="margin-top:6px"></select></div>
-        <div class="f"><label for="s_format">Формат API</label>
-          <select id="s_format"><option value="auto">Авто</option><option value="openai">OpenAI-совместимый (/chat/completions)</option><option value="anthropic">Anthropic (/messages)</option></select></div>
-        <details class="f" id="ghBox"><summary id="ghSum" style="cursor:pointer;padding:10px 12px;border:1px solid var(--line,#8884);border-radius:12px;margin:6px 0">GitHub</summary>
-          <input id="gh_tok" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Токен GitHub (ghp_… или github_pat_…)" style="margin-top:6px">
-          <small>Нужен, чтобы ИИ сам читал и менял код в ваших репозиториях и смотрел результат сборки. Создайте токен: github.com → Settings → Developer settings → Personal access tokens → Tokens (classic) → права <b>repo</b> и <b>workflow</b>. Токен хранится только в этом браузере.</small>
-          <div class="row" style="margin-top:8px"><button class="b" id="ghTest">Войти и проверить</button><button class="b" id="ghOut">Выйти</button></div>
-          <div id="ghRes" class="status"></div></details>
-        <details class="f" id="pxBox"><summary id="pxSum" style="cursor:pointer;padding:10px 12px;border:1px solid var(--line,#8884);border-radius:12px;margin:6px 0">Прокси</summary>
-          <input id="p_proxy" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="https://имя.workers.dev/?u={url}" style="margin-top:6px">
-          <small>Если проверка пишет про CORS или «Failed to fetch», браузер запретил запрос. Свой бесплатный прокси на Cloudflare Workers решает это: нажмите кнопку ниже, вставьте код в новый Worker, а его адрес с <b>?u={url}</b> впишите сюда. Ключ идёт только через ваш прокси. Пусто = без прокси.</small>
-          <button class="b wide" id="cpWorker" style="margin-top:8px">Скопировать код прокси</button></details>
-        <button class="b wide" id="testBtn"><svg class="i"><use href="#i-check"/></svg>Проверить подключение</button>
+        <div class="sec">
+          <div class="f"><label for="s_name">Название</label><input id="s_name"></div>
+          <div class="f"><label for="s_url">Адрес API</label>
+            <input id="s_url" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="https://site.com/v1"></div>
+          <div class="f"><label for="s_key">Ключ API</label>
+            <div class="row"><input id="s_key" type="password" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="b" id="eye" aria-label="Показать ключ"><svg class="i"><use href="#i-eye"/></svg></button></div></div>
+          <div class="f"><label for="s_model">Модель</label>
+            <div class="row"><input id="s_model" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="ID модели, как на сайте"><button class="b" id="loadModels">Список</button></div>
+            <select id="f_models" class="hidden" style="margin-top:6px"></select></div>
+        </div>
+        <div class="sec">
+          <div class="f"><label for="s_conn">Соединение</label>
+            <select id="s_conn"><option value="proxy">Через мой прокси (если он задан)</option><option value="direct">Напрямую, без прокси</option></select>
+            <small>Настраивается для каждого слота отдельно. Адрес прокси хранится во вкладке «Подключения» и не стирается.</small></div>
+          <div class="f" style="margin-bottom:0"><label for="s_format">Формат API</label>
+            <select id="s_format"><option value="auto">Авто</option><option value="openai">OpenAI (/chat/completions)</option><option value="anthropic">Anthropic (/messages)</option></select></div>
+        </div>
+        <button class="b wide pri" id="testBtn"><svg class="i"><use href="#i-check"/></svg>Проверить подключение</button>
         <div id="testRes" class="status"></div>
-        <div class="zone" style="margin-top:12px"><button class="b danger" id="delSlot"><svg class="i"><use href="#i-trash"/></svg>Удалить слот</button></div>
+        <div class="zone" style="margin-top:10px"><button class="b danger" id="delSlot"><svg class="i"><use href="#i-trash"/></svg>Удалить слот</button></div>
+      </section>
+      <section data-p="conn" class="hidden">
+        <div class="sec">
+          <div class="sec-h"><b>GitHub</b><span class="badge" id="ghBadge">не подключён</span></div>
+          <p class="sec-d">Нужен, чтобы ИИ сам читал и менял код в ваших репозиториях и смотрел результат сборки.</p>
+          <div class="f"><label for="gh_tok">Токен</label>
+            <div class="row"><input id="gh_tok" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="ghp_… или github_pat_…"><button class="b" id="ghEye" aria-label="Показать токен"><svg class="i"><use href="#i-eye"/></svg></button></div></div>
+          <div class="row"><button class="b" id="ghTest" style="flex:1">Войти и проверить</button><button class="b" id="ghOut">Выйти</button></div>
+          <div id="ghRes" class="status"></div>
+          <details class="how"><summary>Как получить токен</summary>github.com → Settings → Developer settings → Personal access tokens → Tokens (classic) → отметьте <b>repo</b> и <b>workflow</b>. Токен хранится только в этом браузере.</details>
+        </div>
+        <div class="sec">
+          <div class="sec-h"><b>Прокси</b><span class="badge" id="pxBadge">выключен</span></div>
+          <p class="sec-d">Нужен сайтам, которые не пускают запросы из браузера (ошибка «Load failed» или CORS).</p>
+          <div class="f"><label for="p_proxy">Адрес прокси</label>
+            <input id="p_proxy" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="https://имя.onrender.com/p?t=ТОКЕН&u={url}"></div>
+          <div class="row"><button class="b" id="pxTest" style="flex:1">Проверить прокси</button><button class="b" id="pxClear">Очистить</button></div>
+          <div id="pxRes" class="status"></div>
+          <details class="how"><summary>Подробнее</summary>В адресе должно быть <b>{url}</b>: на его место подставляется адрес сайта. Использовать ли прокси, выбирается в каждом слоте (вкладка «Модель»). Запасной вариант на Cloudflare Workers: <button class="b sm" id="cpWorker" style="margin-top:6px">Скопировать код Worker</button></details>
+        </div>
       </section>
       <section data-p="reply" class="hidden">
         <div class="f"><label for="p_agent">Режим агента</label>
@@ -437,7 +465,7 @@ header{gap:4px;min-height:56px}
 <div id="toast" class="hidden"></div>
 
 <script>
-const SLOTKEY='aichat_slots_v1',KEY='aichat_v4',OLD=['aichat_v3','aichat_v2','aichat_v1'],$=id=>document.getElementById(id);
+const CONNKEY='aichat_conn_v1',SLOTKEY='aichat_slots_v1',KEY='aichat_v4',OLD=['aichat_v3','aichat_v2','aichat_v1'],$=id=>document.getElementById(id);
 const MAXUP=50*1024*1024,KEEP=150000,MAXROUNDS=40,SMALL=20000;
 const CONT='Продолжи ровно с места обрыва: без повторов, вступлений и пояснений. Если обрыв случился внутри блока кода, продолжай код без нового открывающего ```.';
 const coarse=matchMedia('(pointer:coarse)').matches;
@@ -498,7 +526,7 @@ async function idbGet(k){const db=await getDB();if(!db)return null;return new Pr
 function idbSave(str){if(booting){idbHold=str;return;}idbNext=str;if(idbBusy)return;idbBusy=true;(async()=>{while(idbNext!==null){const s=idbNext;idbNext=null;if(await idbPut('state',s))idbOK=true;}idbBusy=false;})();}
 function save(){
   S.ts=Date.now();
-  try{localStorage.setItem(SLOTKEY,JSON.stringify({slots:S.slots,prefs:S.prefs}));}catch(e){}
+  try{localStorage.setItem(SLOTKEY,JSON.stringify({slots:S.slots,prefs:S.prefs}));localStorage.setItem(CONNKEY,JSON.stringify({proxy:S.prefs.proxy||'',ghToken:S.prefs.ghToken||''}));}catch(e){}
   const run=mode=>JSON.stringify(S,function(k,v){
     if(k==='shot'||k[0]==='_')return undefined;
     if(mode==='idb'){if(k==='c'&&typeof v==='string'&&v.length>2000000)return undefined;return v;}
@@ -515,9 +543,11 @@ function save(){
 // Восстановление слотов: из отдельной копии и из старых версий (если поля были потеряны)
 function recover(){
   let fixed=false;
+  try{const c=JSON.parse(localStorage.getItem(CONNKEY));if(c){['proxy','ghToken'].forEach(k=>{if(!S.prefs[k]&&c[k]){S.prefs[k]=c[k];fixed=true;}});}}catch(e){}
+  try{const b=JSON.parse(localStorage.getItem(SLOTKEY));if(b&&b.prefs)['proxy','ghToken'].forEach(k=>{if(!S.prefs[k]&&b.prefs[k]){S.prefs[k]=b.prefs[k];fixed=true;}});}catch(e){}
   const fill=(s,o,fields)=>fields.forEach(f=>{if(!s[f]&&o[f]){s[f]=o[f];fixed=true;}});
   try{const b=JSON.parse(localStorage.getItem(SLOTKEY));
-    if(b&&Array.isArray(b.slots))b.slots.forEach(bs=>{const s=S.slots.find(x=>x.id===bs.id);if(!s){S.slots.push(bs);fixed=true;}else fill(s,bs,['name','url','key','model']);});}catch(e){}
+    if(b&&Array.isArray(b.slots))b.slots.forEach(bs=>{const s=S.slots.find(x=>x.id===bs.id);if(!s){S.slots.push(bs);fixed=true;}else fill(s,bs,['name','url','key','model']);if(bs.noProxy&&s.noProxy===undefined)s.noProxy=true;});}catch(e){}
   for(const k of OLD){try{const o=JSON.parse(localStorage.getItem(k));
     ((o&&o.slots)||[]).forEach(os=>{const s=S.slots.find(x=>x.id===os.id);if(s)fill(s,os,['url','key','model']);});}catch(e){}}
   if(fixed)save();
@@ -1067,14 +1097,14 @@ async function readBody(res,cb){
       if(j.stop_reason)cb.stop(j.stop_reason);}
   }
 }
-function viaProxy(url){const px=((S&&S.prefs&&S.prefs.proxy)||'').trim();if(!px)return url;const m=/\{url\}|%7Burl%7D/i;return m.test(px)?px.replace(m,()=>encodeURIComponent(url)):px.replace(/\/+$/,'')+'/'+url;}
+function viaProxy(url,sl){const px=((S&&S.prefs&&S.prefs.proxy)||'').trim();if(!px||(sl&&sl.noProxy))return url;const m=/\{url\}|%7Burl%7D/i;return m.test(px)?px.replace(m,()=>encodeURIComponent(url)):px.replace(/\/+$/,'')+'/'+url;}
 async function callAPI(sl,pf,mk,cb,signal,useTools){
   const {base}=parseUrl(sl.url),errs=[];
   for(const fmt of formats(sl)){
     const url=base+(fmt==='anthropic'?'/messages':'/chat/completions');
     for(let t=0;t<2;t++){
       const withT=!!useTools&&!sl.noTools;let res;
-      try{res=await fetch(viaProxy(url),{method:'POST',headers:headersFor(sl,fmt,true),body:JSON.stringify(mk(fmt,withT)),signal});}
+      try{res=await fetch(viaProxy(url,sl),{method:'POST',headers:headersFor(sl,fmt,true),body:JSON.stringify(mk(fmt,withT)),signal});}
       catch(e){if(e.name==='AbortError')throw e;errs.push([fmt,e.message+netHint(e)]);break;}
       if(!res.ok){
         const et=await readError(res);
@@ -1090,7 +1120,7 @@ async function fetchModels(sl){
   const {base}=parseUrl(sl.url),errs=[];
   for(const fmt of formats(sl)){
     try{
-      const res=await fetch(viaProxy(base+'/models'),{headers:headersFor(sl,fmt,false)});
+      const res=await fetch(viaProxy(base+'/models',sl),{headers:headersFor(sl,fmt,false)});
       if(!res.ok){errs.push(await readError(res));continue;}
       const j=await res.json(),arr=j.data||j.models||(Array.isArray(j)?j:[]);
       return arr.map(m=>typeof m==='string'?m:(m.id||m.name)).filter(Boolean);
@@ -2077,16 +2107,16 @@ function renderSlots(){
 function fillSlot(){
   const s=dSlot();SEL=s.id;$('s_name').value=s.name;$('s_url').value=s.url;$('s_key').value=s.key;$('s_model').value=s.model;$('s_format').value=s.format;
   $('s_key').type='password';$('eye').innerHTML=ico('eye');$('f_models').classList.add('hidden');setTest('','');renderSlots();
-  $('p_proxy').value=S.prefs.proxy||'';if(S.prefs.proxy)$('pxBox').open=true;pxLabel();$('gh_tok').value=S.prefs.ghToken||'';ghLabel();$('ghRes').textContent='';
+  $('s_conn').value=s.noProxy?'direct':'proxy';$('p_proxy').value=S.prefs.proxy||'';pxLabel();$('gh_tok').value=S.prefs.ghToken||'';$('gh_tok').type='password';ghLabel();$('ghRes').textContent='';$('pxRes').textContent='';
 }
 function flushSlot(){
   const s=dSlot();if(!s)return;
-  const n={name:$('s_name').value.trim()||s.name||'Слот',format:$('s_format').value,url:trimUrl($('s_url').value),key:$('s_key').value.trim(),model:$('s_model').value.trim()};
+  const n={name:$('s_name').value.trim()||s.name||'Слот',format:$('s_format').value,url:trimUrl($('s_url').value),key:$('s_key').value.trim(),model:$('s_model').value.trim(),noProxy:$('s_conn').value==='direct'};
   if(n.url!==s.url||n.key!==s.key||n.format!==s.format){s.detected='';s.noTools=false;}
   Object.assign(s,n);save();renderSlots();renderHeader();renderTabs();
 }
 function flushPrefs(){
-  S.prefs={system:$('p_system').value,maxTokens:+$('p_max').value||16000,think:Math.max(0,+$('p_think').value||0),agent:$('p_agent').value==='1'};
+  Object.assign(S.prefs,{system:$('p_system').value,maxTokens:+$('p_max').value||16000,think:Math.max(0,+$('p_think').value||0),agent:$('p_agent').value==='1'});
   save();renderMrow();
 }
 function openCfg(pane,slotId){
@@ -2096,7 +2126,7 @@ function openCfg(pane,slotId){
 }
 const closeCfg=()=>{if($('modal').classList.contains('hidden'))return;$('modal').classList.add('hidden');save();renderAll();};
 ['s_name','s_url','s_key','s_model'].forEach(id=>{$(id).addEventListener('input',flushSlot);$(id).addEventListener('change',flushSlot);});
-$('s_format').addEventListener('change',flushSlot);
+$('s_format').addEventListener('change',flushSlot);$('s_conn').addEventListener('change',flushSlot);
 ['p_system','p_max','p_think'].forEach(id=>{$(id).addEventListener('input',flushPrefs);$(id).addEventListener('change',flushPrefs);});
 $('p_agent').addEventListener('change',flushPrefs);
 $('f_title').addEventListener('input',()=>{const t=cur(),v=$('f_title').value.trim();if(v){t.title=v;t.autoTitle=false;save();renderHeader();renderTabs();}});
@@ -2125,7 +2155,7 @@ $('testBtn').onclick=async()=>{
   const okMsg=()=>`Работает. ${FMT_NAME[sl.detected]}, адрес:\n${parseUrl(sl.url).base}/${sl.detected==='anthropic'?'messages':'chat/completions'}`;
   try{await callAPI(sl,{maxTokens:64},(fmt)=>buildBody(sl,{maxTokens:64},fmt,[{role:'user',content:'Hi'}],null,''),{text:hit,think:hit},c.signal,false);
     got?setTest(okMsg(),'ok'):setTest('Сервер ответил, но без текста','err');}
-  catch(e){if(e.name==='AbortError'&&got)setTest(okMsg(),'ok');else{setTest(e.message,'err');if(/Load failed|fetch|network/i.test(e.message))$('pxBox').open=true;}}
+  catch(e){if(e.name==='AbortError'&&got)setTest(okMsg(),'ok');else{setTest(e.message,'err');}}
   save();btn.disabled=false;
 };
 $('loadModels').onclick=async()=>{
@@ -2138,7 +2168,7 @@ $('loadModels').onclick=async()=>{
   }catch(e){toast('Список не загрузился. Впишите ID модели вручную.\n'+e.message);}
   btn.disabled=false;btn.textContent='Список';
 };
-const pxLabel=()=>{const on=!!(S.prefs.proxy||'').trim();$('pxSum').textContent='Прокси: '+(on?'ВКЛЮЧЁН':'ВЫКЛЮЧЕН — нажмите, чтобы настроить');$('pxSum').style.color=on?'#2e9d5b':'#d0453a';};
+const pxLabel=()=>{const on=!!(S.prefs.proxy||'').trim(),b=$('pxBadge');b.textContent=on?'задан':'не задан';b.classList.toggle('on',on);};
 $('p_proxy').addEventListener('input',()=>{S.prefs.proxy=$('p_proxy').value.trim();save();pxLabel();});
 $('cpWorker').onclick=async()=>{
   let host='';try{host=new URL(parseUrl(dSlot().url).base).hostname;}catch(e){}
@@ -2156,7 +2186,7 @@ const o=new Headers(p.headers);for(const k in c)o.set(k,c[k]);
 return new Response(p.body,{status:p.status,headers:o});}};`;
   toast((await copyText(code))?'Код прокси скопирован. Вставьте его в Cloudflare → Workers → Create → Edit code.':'Не удалось скопировать');
 };
-const ghLabel=()=>{const on=!!GH.tok();$('ghSum').textContent='GitHub: '+(on?'ВХОД ВЫПОЛНЕН':'не подключён — нажмите, чтобы войти');$('ghSum').style.color=on?'#2e9d5b':'';};
+const ghLabel=()=>{const on=!!GH.tok(),b=$('ghBadge');b.textContent=on?'вход выполнен':'не подключён';b.classList.toggle('on',on);};
 $('gh_tok').addEventListener('input',()=>{S.prefs.ghToken=$('gh_tok').value.trim();save();ghLabel();});
 $('ghTest').onclick=async()=>{
   const r=$('ghRes');r.className='status';r.textContent='Проверяю…';
@@ -2164,7 +2194,20 @@ $('ghTest').onclick=async()=>{
     r.className='status ok';r.textContent='Вход выполнен: '+me.login+'. Доступно репозиториев: '+rp.length+(rp.length?' (например '+rp.slice(0,3).map(x=>x.name).join(', ')+')':'')+'. Если сборки нужны, у токена должно быть право workflow.';}
   catch(e){r.className='status err';r.textContent=e.message;}
 };
-$('ghOut').onclick=()=>{S.prefs.ghToken='';$('gh_tok').value='';save();ghLabel();$('ghRes').textContent='Токен удалён из браузера.';};
+$('ghEye').onclick=()=>{const k=$('gh_tok');k.type=k.type==='password'?'text':'password';$('ghEye').innerHTML=ico(k.type==='password'?'eye':'eyeoff');};
+$('pxClear').onclick=()=>{if(!(S.prefs.proxy||'').trim())return;if(!confirm('Стереть адрес прокси?'))return;S.prefs.proxy='';$('p_proxy').value='';save();pxLabel();$('pxRes').textContent='Адрес стёрт.';};
+$('pxTest').onclick=async()=>{
+  const r=$('pxRes'),px=(S.prefs.proxy||'').trim();r.className='status';
+  if(!px){r.className='status err';r.textContent='Сначала впишите адрес прокси.';return;}
+  let o='';try{o=new URL(px.replace(/\{url\}|%7Burl%7D/ig,'x')).origin;}catch(e){}
+  if(!o){r.className='status err';r.textContent='Адрес прокси выглядит неверно.';return;}
+  r.textContent='Проверяю… бесплатный сервер может просыпаться до минуты.';
+  const c=new AbortController(),tm=setTimeout(()=>c.abort(),70000);
+  try{await fetch(o+'/',{mode:'no-cors',signal:c.signal,cache:'no-store'});r.className='status ok';r.textContent='Сервер отвечает: '+o;}
+  catch(e){r.className='status err';r.textContent='Сервер не ответил: '+(e.name==='AbortError'?'долго нет ответа':e.message)+'. Проверьте адрес и повторите.';}
+  clearTimeout(tm);
+};
+$('ghOut').onclick=()=>{if(!confirm('Выйти из GitHub? Токен будет удалён из браузера.'))return;S.prefs.ghToken='';$('gh_tok').value='';save();ghLabel();$('ghRes').textContent='Токен удалён из браузера.';};
 $('f_models').onchange=e=>{if(e.target.value){$('s_model').value=e.target.value;flushSlot();}};
 $('zipAll').onclick=()=>{
   const t=cur(),k=wsList(t);if(!k.length){toast('В проекте пока нет файлов');return;}
