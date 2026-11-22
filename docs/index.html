@@ -201,6 +201,33 @@ span.chip{cursor:default}
   .card-f{padding-bottom:calc(env(safe-area-inset-bottom) + 12px)}
 }
 
+/* ---- Настройки: отдельный экран ---- */
+#modal{background:var(--bg);padding:0;align-items:stretch;justify-content:stretch;z-index:50}
+#modal .card{max-width:none;width:100%;max-height:none;height:100%;border-radius:0;box-shadow:none;display:grid;
+  grid-template-columns:260px 1fr;grid-template-rows:1fr auto;grid-template-areas:"nav main" "back main";background:var(--bg)}
+.cfg-nav{grid-area:nav;background:var(--side);border-right:1px solid var(--border);padding:calc(env(safe-area-inset-top) + 16px) 12px 8px;overflow-y:auto}
+.cfg-nav h3{margin:0 0 14px 10px;font-size:20px}
+#modal .cats{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;background:none;border-radius:0;overflow:visible}
+#modal .cats button{flex:none;justify-content:flex-start;height:44px;padding:0 12px;border-radius:12px;font-size:15.5px;text-align:left}
+#modal .cats button.on{background:var(--hover2);box-shadow:none;color:var(--text)}
+.cfg-back{grid-area:back;background:var(--side);border-right:1px solid var(--border);padding:10px 12px calc(env(safe-area-inset-bottom) + 14px);display:flex;flex-direction:column;gap:8px}
+.cfg-back .b{width:100%;justify-content:flex-start}
+.cfg-back .hint{margin:0 4px;font-size:12px}
+#modal .card-b{grid-area:main;padding:calc(env(safe-area-inset-top) + 20px) 28px 40px;min-height:0}
+#modal .card-b>section{max-width:640px;margin:0 auto}
+.sidecfg{display:flex;align-items:center;gap:10px;width:100%;padding:10px;margin-top:8px;border:0;border-top:1px solid var(--border);border-radius:10px;background:transparent;color:var(--text);font-size:15px;cursor:pointer;text-align:left}
+.sidecfg .i{width:18px;height:18px;color:var(--muted)}
+@media(max-width:700px){
+  #modal .card{grid-template-columns:1fr;grid-template-rows:auto 1fr auto;grid-template-areas:"nav" "main" "back"}
+  .cfg-nav{border-right:0;border-bottom:1px solid var(--border);padding:calc(env(safe-area-inset-top) + 10px) 10px 8px}
+  .cfg-nav h3{margin:0 0 8px 6px;font-size:18px}
+  #modal .cats{flex-direction:row;overflow-x:auto}
+  #modal .cats button{height:38px;padding:0 12px;font-size:14.5px}
+  .cfg-back{border-right:0;border-top:1px solid var(--border);flex-direction:row;align-items:center;padding:10px 12px calc(env(safe-area-inset-bottom) + 10px)}
+  .cfg-back .b{width:auto}
+  #modal .card-b{padding:14px 14px 24px}
+}
+
 /* ---- модель в чате ---- */
 #composer{position:relative}
 #mrow{max-width:760px;margin:0 auto 6px;display:flex;gap:6px;flex-wrap:wrap}
@@ -352,6 +379,7 @@ header{gap:4px;min-height:56px}
     <button id="newTab"><span class="plus"><svg class="i"><use href="#i-plus"/></svg></span>Новая вкладка</button>
     <div class="label">Вкладки</div>
     <div id="tabs"></div>
+    <button id="sideCfg" class="sidecfg"><svg class="i"><use href="#i-sliders"/></svg>Настройки</button>
   </aside>
   <div id="scrim"></div>
   <main>
@@ -400,8 +428,8 @@ header{gap:4px;min-height:56px}
 
 <div id="modal" class="hidden">
   <div class="card" role="dialog" aria-labelledby="cfgTitle">
-    <div class="card-h"><h3 id="cfgTitle">Настройки</h3><button class="ib" id="closeCfg" aria-label="Закрыть"><svg class="i"><use href="#i-close"/></svg></button></div>
-    <div class="cats" id="cats"><button data-p="model" class="on">Модель</button><button data-p="conn">Подключения</button><button data-p="reply">Ответ</button><button data-p="tab">Вкладка</button></div>
+    <div class="cfg-nav"><h3 id="cfgTitle">Настройки</h3>
+    <div class="cats" id="cats"><button data-p="model" class="on">Модель</button><button data-p="conn">Подключения</button><button data-p="reply">Ответ</button><button data-p="tab">Вкладка</button></div></div>
     <div class="card-b">
       <section data-p="model">
         <div class="slots" id="slots"></div>
@@ -463,7 +491,7 @@ header{gap:4px;min-height:56px}
 </div>
       </section>
     </div>
-    <div class="card-f"><span class="hint" style="margin:0 auto 0 0;align-self:center">Изменения сохраняются сразу</span><button class="b pri" id="saveCfg">Готово</button></div>
+    <div class="cfg-back"><button class="b" id="saveCfg"><svg class="i"><use href="#i-back"/></svg>Назад</button><span class="hint">Изменения сохраняются сразу</span></div>
   </div>
 </div>
 <div id="toast" class="hidden"></div>
@@ -2148,8 +2176,8 @@ $('delSlot').onclick=()=>{
   S.tabs.forEach(t=>{if(t.slotId===id)t.slotId=S.slots[0].id;});
   SEL=cur().slotId;save();fillSlot();renderHeader();renderTabs();
 };
-$('saveCfg').onclick=closeCfg;$('closeCfg').onclick=closeCfg;
-$('modal').onclick=e=>{if(e.target.id==='modal')closeCfg();};
+$('saveCfg').onclick=closeCfg;$('sideCfg').onclick=()=>{$('side').classList.remove('open');$('scrim').classList.remove('open');openCfg('model');};
+
 $('eye').onclick=()=>{const k=$('s_key');k.type=k.type==='password'?'text':'password';$('eye').innerHTML=ico(k.type==='password'?'eye':'eyeoff');};
 $('testBtn').onclick=async()=>{
   flushSlot();const sl=dSlot();
