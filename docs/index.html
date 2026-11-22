@@ -453,7 +453,7 @@ header{gap:4px;min-height:56px}
             <div class="row"><input id="s_key" type="password" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="b" id="eye" aria-label="Показать ключ"><svg class="i"><use href="#i-eye"/></svg></button></div></div>
           <div class="f"><label for="s_model">Модель</label>
             <div class="row"><input id="s_model" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="ID модели, как на сайте"><button class="b" id="loadModels">Список</button></div>
-            <div id="f_models" class="hidden mbox"><div class="mhead"><span id="mcount"></span><input id="mfilter" placeholder="Поиск по списку" autocapitalize="off" autocorrect="off" spellcheck="false"></div><div id="mitems"></div></div></div>
+            <div id="f_models" class="hidden mbox"><div class="mhead"><span id="mcount"></span><input id="mfilter" placeholder="Поиск по списку" autocapitalize="off" autocorrect="off" spellcheck="false"><button class="b sm" id="mclose" aria-label="Закрыть список"><svg class="i"><use href="#i-close"/></svg></button></div><div id="mitems"></div></div></div>
         </div>
         <div class="sec">
           <div class="f"><label for="s_conn">Соединение</label>
@@ -2210,7 +2210,8 @@ function renderModels(){
   $('mitems').innerHTML=l.length?l.map(id=>`<button data-m="${esc(id)}" class="${id===cur?'on':''}">${esc(id)}</button>`).join(''):'<div class="none">Ничего не найдено</div>';
 }
 $('mfilter').addEventListener('input',renderModels);
-$('mitems').onclick=e=>{const b=e.target.closest('button');if(!b)return;$('s_model').value=b.dataset.m;flushSlot();renderModels();};
+$('mitems').onclick=e=>{const b=e.target.closest('button');if(!b)return;$('s_model').value=b.dataset.m;flushSlot();$('f_models').classList.add('hidden');};
+$('mclose').onclick=()=>$('f_models').classList.add('hidden');
 $('loadModels').onclick=async()=>{
   flushSlot();const sl=dSlot();if(!sl.key||!sl.url){toast('Сначала укажите адрес и ключ');return;}
   const btn=$('loadModels');btn.disabled=true;btn.textContent='…';
