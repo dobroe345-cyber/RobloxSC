@@ -739,6 +739,7 @@ function toolInfo(p){
     case 'list_files':return ['list','Список файлов',''];
     case 'preview_open':return ['play',run?'Запускает превью':'Запустил превью',''];
     case 'preview_game':return ['play',run?'Открывает игру по ссылке':'Открыл игру по ссылке',''];
+    case 'preview_reload':return ['refresh',run?'Обновляет страницу':'Обновил страницу',''];
     case 'preview_screenshot':return ['camera',run?'Делает скриншот':'Скриншот',''];
     case 'preview_key':return ['keyboard',(run?'Играет: ':'Нажал: ')+((a.keys||[]).join(' + ')||''),a.hold_ms?a.hold_ms+' мс':''];
     case 'preview_click':return ['cursor','Клик'+(a.x!=null?' '+a.x+', '+a.y:''),''];
@@ -1354,7 +1355,8 @@ const TOOLS=[
   {name:'delete_file',description:'Удалить файл проекта.',schema:{type:'object',properties:{path:{type:'string'}},required:['path']}},
   {name:'preview_open',description:'Собрать страницу из файлов проекта, запустить в превью, дождаться полной загрузки игры и вернуть консоль и скриншот. Вызывай после каждой заметной правки.',schema:{type:'object',properties:{entry:{type:'string',description:'HTML-файл, по умолчанию index.html'},width:{type:'integer'},height:{type:'integer'}}}},
   {name:'preview_game',description:'Открыть в превью опубликованную игру по ссылке пользователя (Настройки → Подключения → «Ссылка на игру», GitHub Pages) и играть в ней: ходить, нажимать клавиши, кликать, делать скриншоты, читать консоль. Сам ждёт, пока игра загрузится. Если ты закоммитил правки, подожди ~1 минуту (деплой Pages) и открой снова. url — другая ссылка вместо сохранённой, path — страница внутри игры.',schema:{type:'object',properties:{url:{type:'string'},path:{type:'string'},width:{type:'integer'},height:{type:'integer'}}}},
-  {name:'preview_screenshot',description:'Сделать скриншот текущего превью (видишь картинку). Сам ждёт, пока игра загрузится.',schema:{type:'object',properties:{}}},
+  {name:'preview_screenshot',description:'Сделать скриншот текущего превью (видишь картинку). Сам ждёт, пока игра загрузится. Чтобы снять именно то, что нужно показать, передай selector (CSS-селектор элемента, например "#menu" или "canvas") или область x, y, w, h в пикселях страницы; без них снимается весь экран.',schema:{type:'object',properties:{selector:{type:'string'},x:{type:'number'},y:{type:'number'},w:{type:'number'},h:{type:'number'}}}},
+  {name:'preview_reload',description:'Обновить страницу в превью (как F5): заново загрузить игру из файлов проекта или по ссылке, дождаться загрузки и вернуть консоль и скриншот. Вызывай после правок, после коммита (для игры по ссылке подожди ~1 минуту деплоя Pages) и когда игра зависла.',schema:{type:'object',properties:{width:{type:'integer'},height:{type:'integer'}}}},
   {name:'preview_key',description:'Нажать клавиши в превью (например ["ArrowRight"], ["w"], ["Space"]) и удерживать hold_ms миллисекунд. Для игры.',schema:{type:'object',properties:{keys:{type:'array',items:{type:'string'}},hold_ms:{type:'integer'},screenshot:{type:'boolean'}},required:['keys']}},
   {name:'preview_click',description:'Клик мышью в превью по координатам (в пикселях страницы).',schema:{type:'object',properties:{x:{type:'number'},y:{type:'number'},screenshot:{type:'boolean'}},required:['x','y']}},
   {name:'preview_eval',description:'Выполнить JavaScript внутри страницы превью и вернуть результат (читать состояние игры, координаты, счёт).',schema:{type:'object',properties:{code:{type:'string'}},required:['code']}},
@@ -1372,6 +1374,7 @@ const AGENT=[
   '- Игры и сайты делай на обычных HTML/CSS/JS. Файлы проекта подключаются через <script src="game.js"> и <link rel="stylesheet" href="style.css">. ES-модули с относительными импортами не работают. Внешние библиотеки подключай по URL с CDN.',
   '- Закончив, обязательно проверь: preview_open → прочитай ошибки консоли и посмотри скриншот → поиграй (preview_key, preview_click, preview_eval для чтения состояния) → снова скриншот. Найденные ошибки исправляй и проверяй заново, пока всё не заработает.',
   '- Скриншоты приложение делает САМО, только когда игра полностью загрузилась (ждёт до ~25 с). Если в ответе написано «ещё не загрузилась», это не ошибка кода: ничего не правь, а вызови preview_wait (ms=10000, screenshot=true). Исправляй код только по ошибкам консоли или по скриншоту уже загрузившейся игры.',
+  '- Скриншот делай того, что нужно показать: preview_screenshot с selector (например "#menu", "canvas") или областью x, y, w, h. Когда в консоли появляется ошибка, приложение само прикладывает скриншот экрана: смотри на него и на текст ошибки. После правок или коммита обновляй страницу через preview_reload.',
   '- Не ходи по кругу: одну и ту же проблему пробуй исправить не больше 2 раз. Если не вышло, остановись и честно расскажи пользователю, что видишь и что не получилось.',
   '- В конце ответа 2–4 предложения: что сделано и как проверено. Если что-то не удалось проверить, скажи честно.'
 ].join('\n');
@@ -1487,6 +1490,12 @@ async function pvLoadUrl(url,a){
   try{const res=await fetch(url+(url.includes('?')?'&':'?')+'_pv='+Date.now(),{cache:'no-store'});if(!res.ok)throw new Error('ответ сайта '+res.status);html=await res.text();}catch(e){err=e.message||String(e);}
   const loaded=new Promise(r=>{const t=setTimeout(()=>r(false),30000);f.onload=()=>{clearTimeout(t);r(true);};});
   if(html!=null&&/<(html|body|script|canvas)\b/i.test(html)){
+    const origin=new URL(url).origin;
+    const srcs=[...html.matchAll(/<script\b([^>]*?)\bsrc=["']([^"']+)["']([^>]*)>\s*<\/script>/gi)];
+    const fresh={};
+    await Promise.all(srcs.map(async m=>{try{if(/type\s*=\s*["']?module/i.test(m[1]+m[3]))return;const u=new URL(m[2],url);if(u.origin!==origin)return;
+      u.searchParams.set('_pv',Date.now());const r=await fetch(u.href,{cache:'no-store'});if(r.ok)fresh[m[0]]=await r.text();}catch(e){}}));
+    html=html.replace(/<script\b([^>]*?)\bsrc=["']([^"']+)["']([^>]*)>\s*<\/script>/gi,m=>fresh[m]!=null?'<script>'+fresh[m].replace(/<\/script/gi,'<\\/script')+'<\/script>':m);
     const inj='<base href="'+url.replace(/"/g,'&quot;')+'"><script>'+HOOK+'<\/script>';
     html=/<head[^>]*>/i.test(html)?html.replace(/<head[^>]*>/i,m=>m+inj):inj+html;
     f.removeAttribute('src');f.srcdoc=html;
@@ -1498,7 +1507,7 @@ async function pvLoadUrl(url,a){
   return ok;
 }
 function logsText(){
-  const n=PV.logs.slice(PV.seen);PV.seen=PV.logs.length;
+  const n=PV.logs.slice(PV.seen);PV.seen=PV.logs.length;PV.newErr=n.some(x=>x.l==='error');
   return n.length?n.slice(-40).map(x=>'['+x.l+'] '+x.m).join('\n'):'(новых сообщений консоли нет)';
 }
 let h2cP=null;
@@ -1513,10 +1522,14 @@ async function manualShot(d,snaps){
     await new Promise(res=>{const im=new Image();im.onload=()=>{try{x.drawImage(im,r.left,r.top,r.width,r.height);}catch(e){}res();};im.onerror=res;im.src=snaps[i];});}
   return cv;
 }
-async function pvShot(){
+async function pvShot(opt){
   const f=pvFrame(),w=f.contentWindow;let d=null;try{d=f.contentDocument;}catch(e){}
   if(PV.remote)throw new Error(REMOTE_MSG);
   if(!d||!d.documentElement||!PV.loaded)throw new Error('Превью не запущено: вызови preview_open');
+  let reg=null;
+  if(opt&&opt.selector){const el=d.querySelector(String(opt.selector));if(!el)throw new Error('Элемент не найден по селектору: '+opt.selector);const r=el.getBoundingClientRect();
+    if(r.width<2||r.height<2)throw new Error('Элемент '+opt.selector+' не виден на экране (нулевой размер)');reg=[r.left,r.top,r.width,r.height];}
+  else if(opt&&+opt.w>0&&+opt.h>0)reg=[+opt.x||0,+opt.y||0,+opt.w,+opt.h];
   const snaps=[];
   await new Promise(r=>{let n=0;const g=()=>{if(n++)return;
     d.querySelectorAll('canvas').forEach(c=>{let u=null;try{u=c.toDataURL('image/png');}catch(e){}snaps.push(u);});r();};
@@ -1530,6 +1543,9 @@ async function pvShot(){
         if(c.parentNode)c.parentNode.replaceChild(im,c);});}}),
       new Promise((_,j)=>setTimeout(()=>j(new Error('timeout')),12000))]);
   }catch(e){cv=await manualShot(d,snaps);}
+  if(reg){
+    const sx=clamp(Math.round(reg[0]),0,cv.width-1),sy=clamp(Math.round(reg[1]),0,cv.height-1),sw=clamp(Math.round(reg[2]),1,cv.width-sx),sh=clamp(Math.round(reg[3]),1,cv.height-sy);
+    const c2=document.createElement('canvas');c2.width=sw;c2.height=sh;c2.getContext('2d').drawImage(cv,sx,sy,sw,sh,0,0,sw,sh);cv=c2;}
   const k=Math.min(1,900/cv.width),o=document.createElement('canvas');o.width=Math.round(cv.width*k);o.height=Math.round(cv.height*k);
   const x=o.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,o.width,o.height);x.drawImage(cv,0,0,o.width,o.height);
   return o.toDataURL('image/jpeg',0.72);
@@ -1550,13 +1566,13 @@ function fireKey(type,k){
   try{Object.defineProperty(e,'keyCode',{get:()=>i.kc});Object.defineProperty(e,'which',{get:()=>i.kc});}catch(_){}
   (d.activeElement||d.body).dispatchEvent(e);
 }
-async function pvShotOnly(text){try{return {text,img:await pvShot()};}catch(e){return text+'\n(скриншот не удался: '+e.message+')';}}
-async function withShot(text,shot,max){
+async function pvShotOnly(text,opt){try{return {text,img:await pvShot(opt)};}catch(e){return text+'\n(скриншот не удался: '+e.message+')';}}
+async function withShot(text,shot,max,opt){
   if(!shot)return text;
   try{
-    const r=await pvWaitReady(max||20000);
-    text+='\n'+readyNote(r);
-    return {text,img:await pvShot()};
+    const r=await pvWaitReady(max||(PV.newErr?4000:20000));
+    text+='\n'+readyNote(r)+(PV.newErr?'\nВ консоли ОШИБКА: к ответу приложен скриншот экрана в этот момент.':'');
+    return {text,img:await pvShot(opt)};
   }catch(e){return text+'\n(скриншот не удался: '+e.message+')';}
 }
 async function pvEval(code){
@@ -1607,7 +1623,12 @@ async function execTool(tab,name,a){
       const ok=await pvLoadUrl(u,a);
       const t='Игра открыта по ссылке '+u+(PV.remote?' (внешняя страница: управлять и снимать экран нельзя)':'')+', '+PV.w+'×'+PV.h+'.\n'+readyNote(PV.r)+'\nКонсоль:\n'+logsText();
       return PV.remote?t:pvShotOnly(t);}
-    case 'preview_screenshot':return withShot('Скриншот '+PV.w+'×'+PV.h+'.\nКонсоль:\n'+logsText(),true);
+    case 'preview_screenshot':{const part=a.selector?' (элемент '+a.selector+')':(+a.w>0&&+a.h>0?' (область '+(+a.x||0)+','+(+a.y||0)+' '+a.w+'×'+a.h+')':'');
+      return withShot('Скриншот '+PV.w+'×'+PV.h+part+'.\nКонсоль:\n'+logsText(),true,undefined,a);}
+    case 'preview_reload':{
+      let ok;if(PV.url)ok=await pvLoadUrl(PV.url,a);else if(PV.entry)ok=await pvLoad(tab,{entry:PV.entry,width:a.width,height:a.height});else{const gu=gameUrl();if(!gu)throw new Error('Нечего обновлять: превью ещё не запускали. Вызови preview_open или preview_game.');ok=await pvLoadUrl(gu,a);}
+      const t='Страница обновлена: '+(PV.url||PV.entry)+'.\n'+readyNote(PV.r)+'\nКонсоль:\n'+logsText();
+      return PV.remote?t:pvShotOnly(t);}
     case 'preview_key':{
       const keys=Array.isArray(a.keys)?a.keys:[a.keys];if(!keys.length||keys[0]==null)throw new Error('keys пустой');
       if(PV.remote)throw new Error(REMOTE_MSG);
@@ -1616,7 +1637,7 @@ async function execTool(tab,name,a){
       await sleep(clamp(+a.hold_ms||150,20,10000));
       keys.forEach(k=>fireKey('keyup',String(k)));
       await sleep(150);
-      return withShot('Нажато: '+keys.join(' + ')+'. Консоль:\n'+logsText(),a.screenshot);}
+      return withShot('Нажато: '+keys.join(' + ')+'. Консоль:\n'+logsText(),a.screenshot||PV.newErr);}
     case 'preview_click':{
       if(PV.remote)throw new Error(REMOTE_MSG);
       const f=pvFrame(),w=f.contentWindow,d=f.contentDocument;if(!d||!PV.loaded)throw new Error('Превью не запущено: вызови preview_open');
@@ -1625,9 +1646,9 @@ async function execTool(tab,name,a){
       ['pointerdown','mousedown','pointerup','mouseup','click'].forEach(t=>{
         el.dispatchEvent(t.startsWith('pointer')?new w.PointerEvent(t,Object.assign({pointerType:'mouse',isPrimary:true},o)):new w.MouseEvent(t,o));});
       await sleep(200);
-      return withShot('Клик в ('+x+', '+y+') по <'+el.tagName.toLowerCase()+'>. Консоль:\n'+logsText(),a.screenshot);}
-    case 'preview_eval':{const r=await pvEval(String(need('code')));return 'Результат:\n'+r+'\nКонсоль:\n'+logsText();}
-    case 'preview_wait':await sleep(clamp(+a.ms||500,50,10000));return withShot('Подождал. Консоль:\n'+logsText(),a.screenshot);
+      return withShot('Клик в ('+x+', '+y+') по <'+el.tagName.toLowerCase()+'>. Консоль:\n'+logsText(),a.screenshot||PV.newErr);}
+    case 'preview_eval':{const r=await pvEval(String(need('code')));await sleep(150);return withShot('Результат:\n'+r+'\nКонсоль:\n'+logsText(),PV.newErr);}
+    case 'preview_wait':await sleep(clamp(+a.ms||500,50,10000));return withShot('Подождал. Консоль:\n'+logsText(),a.screenshot||PV.newErr);
     case 'preview_logs':return logsText();
   }
   throw new Error('Неизвестный инструмент: '+name);
