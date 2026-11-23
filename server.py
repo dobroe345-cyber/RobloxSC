@@ -40,6 +40,20 @@ def fail(code, text):
     return cors(Response(text, status=code, mimetype="text/plain; charset=utf-8"))
 
 
+@app.after_request
+def log_mcp(resp):
+    """Журнал MCP-запросов (видно в Render → Logs): что прислал клиент и что мы ответили. Токен не пишем."""
+    try:
+        if request.path.startswith("/mcp") or (request.path == "/" and request.method != "GET"):
+            j = request.get_json(silent=True)
+            m = ",".join(str(x.get("method")) for x in (j if isinstance(j, list) else [j]) if isinstance(x, dict)) if j else "-"
+            print("[mcp] %s %s rpc=%s -> %s %s | accept=%r ua=%r" % (request.method, request.path, m, resp.status_code, resp.content_type,
+                  request.headers.get("Accept", ""), request.headers.get("User-Agent", "")[:60]), flush=True)
+    except Exception:
+        pass
+    return resp
+
+
 @app.route("/", methods=["GET", "POST", "OPTIONS"])
 def health():
     if request.method in ("POST", "OPTIONS"):

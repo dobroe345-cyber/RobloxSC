@@ -251,7 +251,7 @@ def mcp():
     if not authorized():
         return cors(Response('{"error":"unauthorized"}', status=401, mimetype="application/json"))
     if request.method != "POST":
-        r = Response("Только POST", status=405)
+        r = Response(json.dumps(rpc_error(None, -32000, "Method not allowed: use POST")), status=405, mimetype="application/json")
         r.headers["Allow"] = "POST"
         return cors(r)
     data = request.get_json(silent=True)
@@ -260,5 +260,5 @@ def mcp():
     msgs = data if isinstance(data, list) else [data]
     out = [x for x in (handle(m) for m in msgs if isinstance(m, dict)) if x is not None]
     if not out:
-        return cors(Response(status=202))
+        return cors(Response("{}", status=202, mimetype="application/json"))
     return reply(out if isinstance(data, list) else out[0])
