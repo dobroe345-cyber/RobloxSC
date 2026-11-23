@@ -3,6 +3,7 @@
 Нужны переменные окружения: PROXY_TOKEN (пароль к серверу) и GITHUB_TOKEN (токен GitHub с правами repo, workflow).
 """
 import base64
+import json
 import os
 import re
 
@@ -222,6 +223,17 @@ def cors(resp):
     return resp
 
 
+def reply(body):
+    """Ответ JSON-RPC. Клиентам, которые принимают только text/event-stream, отдаём SSE; остальным обычный JSON."""
+    txt = json.dumps(body, ensure_ascii=False)
+    acc = request.headers.get("Accept", "").lower()
+    if "text/event-stream" in acc and "application/json" not in acc:
+        r = Response("event: message\ndata: " + txt + "\n\n", mimetype="text/event-stream")
+        r.headers["Cache-Control"] = "no-cache"
+        return cors(r)
+    return cors(Response(txt, mimetype="application/json"))
+
+
 @bp.route("/mcp", methods=["POST", "GET", "DELETE", "OPTIONS"])
 def mcp():
     if request.method == "OPTIONS":
@@ -234,10 +246,9 @@ def mcp():
         return cors(r)
     data = request.get_json(silent=True)
     if data is None:
-        return cors(Response(__import__("json").dumps(rpc_error(None, -32700, "Parse error")), mimetype="application/json"))
+        return reply(rpc_error(None, -32700, "Parse error"))
     msgs = data if isinstance(data, list) else [data]
     out = [x for x in (handle(m) for m in msgs if isinstance(m, dict)) if x is not None]
     if not out:
         return cors(Response(status=202))
-    body = out if isinstance(data, list) else out[0]
-    return cors(Response(__import__("json").dumps(body, ensure_ascii=False), mimetype="application/json"))
+    return reply(out if isinstance(data, list) else out[0])
