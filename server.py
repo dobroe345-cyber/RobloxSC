@@ -10,7 +10,7 @@ import requests
 from flask import Flask, Response, request, stream_with_context
 
 app = Flask(__name__)
-from mcp_server import bp as mcp_bp  # MCP-сервер GitHub на /mcp
+from mcp_server import bp as mcp_bp, mcp as mcp_endpoint  # MCP-сервер GitHub на /mcp (и на / для POST, если в адресе забыли /mcp)
 app.register_blueprint(mcp_bp)
 
 ALLOWED_HOSTS = {h.strip().lower() for h in os.environ.get("ALLOWED_HOSTS", "").split(",") if h.strip()}
@@ -40,8 +40,10 @@ def fail(code, text):
     return cors(Response(text, status=code, mimetype="text/plain; charset=utf-8"))
 
 
-@app.get("/")
+@app.route("/", methods=["GET", "POST", "OPTIONS"])
 def health():
+    if request.method in ("POST", "OPTIONS"):
+        return mcp_endpoint()
     return cors(Response("AI Chat proxy: работает. Разрешённые сайты: " + (", ".join(sorted(ALLOWED_HOSTS)) or "не заданы"),
                          mimetype="text/plain; charset=utf-8"))
 

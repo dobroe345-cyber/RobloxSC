@@ -234,6 +234,7 @@ def reply(body):
     return cors(Response(txt, mimetype="application/json"))
 
 
+@bp.route("/mcp/", methods=["POST", "GET", "DELETE", "OPTIONS"])
 @bp.route("/mcp", methods=["POST", "GET", "DELETE", "OPTIONS"])
 def mcp():
     if request.method == "OPTIONS":
