@@ -164,6 +164,13 @@ TOOLS = [
     {"name": "github_run_log", "description": "Разбор запуска Actions: шаги, ошибки компилятора, лог упавшей задачи.", "inputSchema": S({"repo": STR, "run_id": {"type": "integer"}, "full": {"type": "boolean"}}, ["repo", "run_id"]), "fn": t_run_log},
     {"name": "github_dispatch", "description": "Запустить workflow вручную (нужен on: workflow_dispatch), workflow — имя файла, например build.yml.", "inputSchema": S({"repo": STR, "workflow": STR, "ref": STR}, ["repo", "workflow"]), "fn": t_dispatch},
 ]
+# Подсказки клиентам (MCP annotations): какие инструменты только читают, а какие меняют репозиторий.
+READ_ONLY = {"github_list_repos", "github_tree", "github_read_file", "github_runs", "github_run_log"}
+for _t in TOOLS:
+    _ro = _t["name"] in READ_ONLY
+    _t["title"] = _t["name"].replace("github_", "GitHub: ").replace("_", " ")
+    _t["annotations"] = {"title": _t["title"], "readOnlyHint": _ro, "openWorldHint": True,
+                         **({} if _ro else {"destructiveHint": _t["name"] == "github_commit_files", "idempotentHint": False})}
 BY_NAME = {t["name"]: t for t in TOOLS}
 
 
@@ -231,7 +238,9 @@ def reply(body):
         r = Response("event: message\ndata: " + txt + "\n\n", mimetype="text/event-stream")
         r.headers["Cache-Control"] = "no-cache"
         return cors(r)
-    return cors(Response(txt, mimetype="application/json"))
+    r = Response(txt, mimetype="application/json")
+    r.headers["Cache-Control"] = "no-store"
+    return cors(r)
 
 
 @bp.route("/mcp/", methods=["POST", "GET", "DELETE", "OPTIONS"])
