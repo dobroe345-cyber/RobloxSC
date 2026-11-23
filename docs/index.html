@@ -473,6 +473,11 @@ header{gap:4px;min-height:56px}
           <p class="sec-d">Нужен, чтобы ИИ сам читал и менял код в ваших репозиториях и смотрел результат сборки.</p>
           <div class="f"><label for="gh_tok">Токен</label>
             <div class="row"><input id="gh_tok" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="ghp_… или github_pat_…"><button class="b" id="ghEye" aria-label="Показать токен"><svg class="i"><use href="#i-eye"/></svg></button></div></div>
+          <div class="f"><label for="gh_game">Ссылка на игру</label>
+            <input id="gh_game" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="https://ваш-логин.github.io/название-игры/">
+            <small>Адрес опубликованной игры (GitHub Pages) или страницы репозитория на GitHub. ИИ откроет игру в превью, дождётся загрузки, будет ходить по ней, нажимать клавиши и делать скриншоты.</small></div>
+          <div class="row"><button class="b" id="gameOpen" style="flex:1">Открыть игру в превью</button></div>
+          <div id="gameRes" class="status"></div>
           <div class="row"><button class="b" id="ghTest" style="flex:1">Войти и проверить</button><button class="b" id="ghOut">Выйти</button></div>
           <div id="ghRes" class="status"></div>
           <details class="how" id="ghHow"><summary>Как получить токен</summary>github.com → Settings → Developer settings → Personal access tokens → Tokens (classic) → отметьте <b>repo</b> и <b>workflow</b>. Токен хранится только в этом браузере.</details>
@@ -571,7 +576,7 @@ async function idbGet(k){const db=await getDB();if(!db)return null;return new Pr
 function idbSave(str){if(booting){idbHold=str;return;}idbNext=str;if(idbBusy)return;idbBusy=true;(async()=>{while(idbNext!==null){const s=idbNext;idbNext=null;if(await idbPut('state',s))idbOK=true;}idbBusy=false;})();}
 function save(){
   S.ts=Date.now();
-  try{localStorage.setItem(SLOTKEY,JSON.stringify({slots:S.slots,prefs:S.prefs}));localStorage.setItem(CONNKEY,JSON.stringify({proxy:S.prefs.proxy||'',ghToken:S.prefs.ghToken||''}));}catch(e){}
+  try{localStorage.setItem(SLOTKEY,JSON.stringify({slots:S.slots,prefs:S.prefs}));localStorage.setItem(CONNKEY,JSON.stringify({proxy:S.prefs.proxy||'',ghToken:S.prefs.ghToken||'',gameUrl:S.prefs.gameUrl||''}));}catch(e){}
   const run=mode=>JSON.stringify(S,function(k,v){
     if(k==='shot'||k[0]==='_')return undefined;
     if(mode==='idb'){if(k==='c'&&typeof v==='string'&&v.length>2000000)return undefined;return v;}
@@ -588,8 +593,8 @@ function save(){
 // Восстановление слотов: из отдельной копии и из старых версий (если поля были потеряны)
 function recover(){
   let fixed=false;
-  try{const c=JSON.parse(localStorage.getItem(CONNKEY));if(c){['proxy','ghToken'].forEach(k=>{if(!S.prefs[k]&&c[k]){S.prefs[k]=c[k];fixed=true;}});}}catch(e){}
-  try{const b=JSON.parse(localStorage.getItem(SLOTKEY));if(b&&b.prefs)['proxy','ghToken'].forEach(k=>{if(!S.prefs[k]&&b.prefs[k]){S.prefs[k]=b.prefs[k];fixed=true;}});}catch(e){}
+  try{const c=JSON.parse(localStorage.getItem(CONNKEY));if(c){['proxy','ghToken','gameUrl'].forEach(k=>{if(!S.prefs[k]&&c[k]){S.prefs[k]=c[k];fixed=true;}});}}catch(e){}
+  try{const b=JSON.parse(localStorage.getItem(SLOTKEY));if(b&&b.prefs)['proxy','ghToken','gameUrl'].forEach(k=>{if(!S.prefs[k]&&b.prefs[k]){S.prefs[k]=b.prefs[k];fixed=true;}});}catch(e){}
   const fill=(s,o,fields)=>fields.forEach(f=>{if(!s[f]&&o[f]){s[f]=o[f];fixed=true;}});
   try{const b=JSON.parse(localStorage.getItem(SLOTKEY));
     if(b&&Array.isArray(b.slots))b.slots.forEach(bs=>{const s=S.slots.find(x=>x.id===bs.id);if(!s){S.slots.push(bs);fixed=true;}else fill(s,bs,['name','url','key','model']);if(bs.noProxy&&s.noProxy===undefined)s.noProxy=true;});}catch(e){}
@@ -733,6 +738,7 @@ function toolInfo(p){
     case 'delete_file':return ['trash','Удалил '+P,''];
     case 'list_files':return ['list','Список файлов',''];
     case 'preview_open':return ['play',run?'Запускает превью':'Запустил превью',''];
+    case 'preview_game':return ['play',run?'Открывает игру по ссылке':'Открыл игру по ссылке',''];
     case 'preview_screenshot':return ['camera',run?'Делает скриншот':'Скриншот',''];
     case 'preview_key':return ['keyboard',(run?'Играет: ':'Нажал: ')+((a.keys||[]).join(' + ')||''),a.hold_ms?a.hold_ms+' мс':''];
     case 'preview_click':return ['cursor','Клик'+(a.x!=null?' '+a.x+', '+a.y:''),''];
@@ -812,7 +818,7 @@ function toolRow(p,i,pi,cls){
   return `<div class="si ${cls}"><span class="ico">${ico(ic)}</span><div class="sc"><button class="tool-h" data-a="tool" data-i="${i}" data-pi="${pi}"><span class="n">${esc(t)}</span>`+
     (sm?`<small>${esc(sm)}</small>`:'')+st+`</button>`+
     (canOpen?`<div class="chips" style="margin:2px 0 4px"><button class="chip" data-a="openf" data-path="${esc(a.path)}">${ico('file')}Открыть ${esc(a.path)}</button></div>`:'')+
-    (p.name==='preview_open'&&p.status==='ok'?`<div class="chips" style="margin:2px 0 4px"><button class="chip" data-a="openprev">${ico('play')}Открыть превью</button></div>`:'')+
+    ((p.name==='preview_open'||p.name==='preview_game')&&p.status==='ok'?`<div class="chips" style="margin:2px 0 4px"><button class="chip" data-a="openprev">${ico('play')}Открыть превью</button></div>`:'')+
     (p.shot?`<img class="shot" data-a="zoom" data-u="${esc(p.shot)}" src="${esc(p.shot)}" alt="скриншот">`:'')+
     body+`</div></div>`;
 }
@@ -1346,12 +1352,13 @@ const TOOLS=[
   {name:'github_dispatch',description:'Запустить workflow вручную (нужен on: workflow_dispatch). workflow — имя файла, например build.yml.',schema:{type:'object',properties:{repo:{type:'string'},workflow:{type:'string'},ref:{type:'string'}},required:['workflow']}},
   {name:'github_pages',description:'Узнать адрес сайта GitHub Pages репозитория (куда выкладывается собранная игра).',schema:{type:'object',properties:{repo:{type:'string'}}}},
   {name:'delete_file',description:'Удалить файл проекта.',schema:{type:'object',properties:{path:{type:'string'}},required:['path']}},
-  {name:'preview_open',description:'Собрать страницу из файлов проекта, запустить в превью и вернуть консоль и скриншот. Вызывай после каждой заметной правки.',schema:{type:'object',properties:{entry:{type:'string',description:'HTML-файл, по умолчанию index.html'},width:{type:'integer'},height:{type:'integer'}}}},
-  {name:'preview_screenshot',description:'Сделать скриншот текущего превью (видишь картинку).',schema:{type:'object',properties:{}}},
+  {name:'preview_open',description:'Собрать страницу из файлов проекта, запустить в превью, дождаться полной загрузки игры и вернуть консоль и скриншот. Вызывай после каждой заметной правки.',schema:{type:'object',properties:{entry:{type:'string',description:'HTML-файл, по умолчанию index.html'},width:{type:'integer'},height:{type:'integer'}}}},
+  {name:'preview_game',description:'Открыть в превью опубликованную игру по ссылке пользователя (Настройки → Подключения → «Ссылка на игру», GitHub Pages) и играть в ней: ходить, нажимать клавиши, кликать, делать скриншоты, читать консоль. Сам ждёт, пока игра загрузится. Если ты закоммитил правки, подожди ~1 минуту (деплой Pages) и открой снова. url — другая ссылка вместо сохранённой, path — страница внутри игры.',schema:{type:'object',properties:{url:{type:'string'},path:{type:'string'},width:{type:'integer'},height:{type:'integer'}}}},
+  {name:'preview_screenshot',description:'Сделать скриншот текущего превью (видишь картинку). Сам ждёт, пока игра загрузится.',schema:{type:'object',properties:{}}},
   {name:'preview_key',description:'Нажать клавиши в превью (например ["ArrowRight"], ["w"], ["Space"]) и удерживать hold_ms миллисекунд. Для игры.',schema:{type:'object',properties:{keys:{type:'array',items:{type:'string'}},hold_ms:{type:'integer'},screenshot:{type:'boolean'}},required:['keys']}},
   {name:'preview_click',description:'Клик мышью в превью по координатам (в пикселях страницы).',schema:{type:'object',properties:{x:{type:'number'},y:{type:'number'},screenshot:{type:'boolean'}},required:['x','y']}},
   {name:'preview_eval',description:'Выполнить JavaScript внутри страницы превью и вернуть результат (читать состояние игры, координаты, счёт).',schema:{type:'object',properties:{code:{type:'string'}},required:['code']}},
-  {name:'preview_wait',description:'Подождать, пока игра/анимация идёт (до 10000 мс).',schema:{type:'object',properties:{ms:{type:'integer'},screenshot:{type:'boolean'}},required:['ms']}},
+  {name:'preview_wait',description:'Подождать, пока игра/анимация идёт или догружается (до 10000 мс). Если скриншот показал «игра ещё не загрузилась», вызови это с ms=10000 и screenshot=true.',schema:{type:'object',properties:{ms:{type:'integer'},screenshot:{type:'boolean'}},required:['ms']}},
   {name:'preview_logs',description:'Показать последние сообщения консоли и ошибки превью.',schema:{type:'object',properties:{}}}
 ];
 const activeTools=()=>TOOLS.filter(x=>!/^github_/.test(x.name)||GH.tok());
@@ -1364,13 +1371,16 @@ const AGENT=[
   '- Бинарные файлы пользователя (wasm, jar, class, glb, exe и др.) приложение уже разобрало в текст: для каждого есть <имя>.report.txt (структура, импорты/экспорты, методы, строки), для wasm ещё <имя>.wat.txt (дизассемблер), для glb <имя>.json. Читай их через read_file; сырые байты — через hexdump. Не говори, что не умеешь читать бинарные файлы.',
   '- Игры и сайты делай на обычных HTML/CSS/JS. Файлы проекта подключаются через <script src="game.js"> и <link rel="stylesheet" href="style.css">. ES-модули с относительными импортами не работают. Внешние библиотеки подключай по URL с CDN.',
   '- Закончив, обязательно проверь: preview_open → прочитай ошибки консоли и посмотри скриншот → поиграй (preview_key, preview_click, preview_eval для чтения состояния) → снова скриншот. Найденные ошибки исправляй и проверяй заново, пока всё не заработает.',
+  '- Скриншоты приложение делает САМО, только когда игра полностью загрузилась (ждёт до ~25 с). Если в ответе написано «ещё не загрузилась», это не ошибка кода: ничего не правь, а вызови preview_wait (ms=10000, screenshot=true). Исправляй код только по ошибкам консоли или по скриншоту уже загрузившейся игры.',
+  '- Не ходи по кругу: одну и ту же проблему пробуй исправить не больше 2 раз. Если не вышло, остановись и честно расскажи пользователю, что видишь и что не получилось.',
   '- В конце ответа 2–4 предложения: что сделано и как проверено. Если что-то не удалось проверить, скажи честно.'
 ].join('\n');
 const GHPROMPT='\nGitHub подключён. Это твой «компилятор» и способ тестировать: локального компилятора нет, C/C++/Java/Rust и т.п. собираются в GitHub Actions репозитория. Порядок: github_import (скачать код) → read_file/edit_file → github_commit → подожди и github_runs → github_run_log, если сборка упала: исправь ошибки и снова commit; повторяй, пока сборка не станет success. Сайт/игру на Pages покажи по адресу из github_pages. Игру на HTML/JS из репозитория можно запустить в превью (preview_open) и сыграть. Для быстрых проверок логики есть run_js и run_python. Не коммить без необходимости в основную ветку чужие или посторонние файлы, а в конце ответа перечисли, что закоммичено.';
 function sysPrompt(tab,tools){
   let s=S.prefs.system||'';
   if(tools){const F=WS(tab),k=wsList(tab);
-    s=AGENT+(GH.tok()?GHPROMPT:'\nGitHub не подключён: если пользователь просит работать с репозиторием, скажи, что нужно ввести токен в Настройки → Модель → GitHub.')+'\n\nФайлы проекта сейчас: '+(k.length?k.map(p=>p+' ('+nLines(F[p])+' стр)').join(', '):'пусто')+'.'+(s?'\n\n'+s:'');}
+    const gu=gameUrl();
+    s=AGENT+(gu?'\nСсылка на игру пользователя (GitHub Pages): '+gu+'. Открывай её через preview_game: это опубликованная версия игры, в ней можно ходить (preview_key), кликать (preview_click), читать состояние (preview_eval) и делать скриншоты. Игра грузится не мгновенно: приложение само дожидается загрузки.':'')+(GH.tok()?GHPROMPT:'\nGitHub не подключён: если пользователь просит работать с репозиторием, скажи, что нужно ввести токен в Настройки → Модель → GitHub.')+'\n\nФайлы проекта сейчас: '+(k.length?k.map(p=>p+' ('+nLines(F[p])+' стр)').join(', '):'пусто')+'.'+(s?'\n\n'+s:'');}
   return s;
 }
 
@@ -1378,7 +1388,7 @@ function sysPrompt(tab,tools){
 const PV={logs:[],seen:0,w:960,h:600,entry:null,loaded:false};
 const pvFrame=()=>$('pvf');
 window.addEventListener('message',e=>{const d=e.data;if(d&&d.__pv){PV.logs.push({l:d.l,m:String(d.m).slice(0,500)});if(PV.logs.length>300){PV.logs.shift();PV.seen=Math.max(0,PV.seen-1);}}});
-const HOOK="(function(){function f(a){return Array.prototype.map.call(a,function(x){try{return typeof x==='string'?x:(x instanceof Error?(x.stack||x.message):JSON.stringify(x))}catch(e){return String(x)}}).join(' ')}function P(l,m){try{parent.postMessage({__pv:1,l:l,m:m},'*')}catch(e){}}['log','info','warn','error','debug'].forEach(function(k){var o=console[k];console[k]=function(){P(k,f(arguments));try{o.apply(console,arguments)}catch(e){}}});addEventListener('error',function(e){P('error',(e.message||'error')+' @'+String(e.filename||'').split('/').pop()+':'+e.lineno)});addEventListener('unhandledrejection',function(e){P('error','Promise: '+(e.reason&&e.reason.stack||e.reason))})})();";
+const HOOK="(function(){function f(a){return Array.prototype.map.call(a,function(x){try{return typeof x==='string'?x:(x instanceof Error?(x.stack||x.message):JSON.stringify(x))}catch(e){return String(x)}}).join(' ')}function P(l,m){try{parent.postMessage({__pv:1,l:l,m:m},'*')}catch(e){}}['log','info','warn','error','debug'].forEach(function(k){var o=console[k];console[k]=function(){P(k,f(arguments));try{o.apply(console,arguments)}catch(e){}}});addEventListener('error',function(e){P('error',(e.message||'error')+' @'+String(e.filename||'').split('/').pop()+':'+e.lineno)});addEventListener('unhandledrejection',function(e){P('error','Promise: '+(e.reason&&e.reason.stack||e.reason))});var W=window;W.__pvP=0;var of=W.fetch;if(of)W.fetch=function(){W.__pvP++;var p;try{p=of.apply(this,arguments)}catch(e){W.__pvP=Math.max(0,W.__pvP-1);throw e}var d=function(){W.__pvP=Math.max(0,W.__pvP-1)};p.then(d,d);return p};var xs=XMLHttpRequest.prototype.send;XMLHttpRequest.prototype.send=function(){var x=this,dn=false;W.__pvP++;x.addEventListener('loadend',function(){if(!dn){dn=true;W.__pvP=Math.max(0,W.__pvP-1)}});return xs.apply(this,arguments)}})();";
 function buildPage(tab,entry){
   const F=WS(tab);let html=F[entry];
   if(html==null)throw new Error('Нет файла '+entry);
@@ -1398,19 +1408,93 @@ function fit(){
   const box=$('pvbox'),f=pvFrame(),avail=box.clientWidth||320,k=Math.min(1,avail/PV.w);
   f.style.width=PV.w+'px';f.style.height=PV.h+'px';f.style.transform='scale('+k+')';box.style.height=Math.round(PV.h*k)+'px';
 }
+const REMOTE_MSG='Игра открыта как страница другого сайта: приложение не может ни управлять ею, ни снимать экран. Скажи об этом пользователю и не пытайся чинить код.';
+const LOADER_RE=/(^|[-_\s])(loading|loader|preloader|spinner|splash)([-_\s]|$)/i;
+const LOADER_TXT=/загрузк|loading|initiali[sz]|подожд|please wait|генерац|generating/i;
+// Что ещё мешает считать игру загруженной (пустая строка = всё готово)
+function pvBusy(){
+  const f=pvFrame();let d=null,w=null;try{d=f.contentDocument;w=f.contentWindow;}catch(e){}
+  if(!d||!w||!d.documentElement||!d.body)return 'страница ещё не создана';
+  try{
+    if(d.readyState!=='complete')return 'страница ещё загружается';
+    if(w.__pvP>0)return 'идут сетевые запросы ('+w.__pvP+')';
+    if([...d.images].some(i=>!i.complete))return 'грузятся картинки';
+    if(d.fonts&&d.fonts.status==='loading')return 'грузятся шрифты';
+    try{const rs=w.performance.getEntriesByType('resource');if(rs.length){const last=Math.max(...rs.slice(-40).map(x=>x.responseEnd||0));if(w.performance.now()-last<600)return 'подгружаются файлы игры';}}catch(e){}
+    const vis=el=>{const cs=w.getComputedStyle(el);if(cs.display==='none'||cs.visibility==='hidden'||+cs.opacity<0.05)return false;const r=el.getBoundingClientRect();return r.width>8&&r.height>8&&r.bottom>0&&r.right>0&&r.left<w.innerWidth&&r.top<w.innerHeight;};
+    for(const el of d.querySelectorAll('progress')){if(el.max&&el.value<el.max&&vis(el))return 'полоса загрузки не дошла до конца';}
+    for(const el of d.querySelectorAll('[id],[class]')){
+      const id=(el.id||'')+' '+(typeof el.className==='string'?el.className:'');
+      if(LOADER_RE.test(id)&&vis(el))return 'виден экран загрузки';}
+    const all=d.body.querySelectorAll('*'),n=Math.min(all.length,4000);
+    for(let i=0;i<n;i++){const el=all[i];
+      if(el.childElementCount===0&&/^(DIV|SPAN|P|H1|H2|H3|B|LABEL|SMALL)$/.test(el.tagName)){const t=(el.textContent||'').trim();
+        if(t&&t.length<80&&LOADER_TXT.test(t)&&vis(el))return 'на экране надпись «'+t.slice(0,40)+'»';}}
+  }catch(e){}
+  return '';
+}
+// Ждём, пока игра реально загрузится и 0,7 с подряд ничего не грузится
+async function pvWaitReady(max){
+  if(PV.remote)return {ready:true,ms:0,why:''};
+  max=clamp(+max||25000,1000,60000);const t0=Date.now();let since=0,why='',ok=false;
+  while(Date.now()-t0<max){
+    why=pvBusy();
+    if(why)since=0;else{if(!since)since=Date.now();if(Date.now()-since>=700){ok=true;break;}}
+    await sleep(250);
+  }
+  if(ok)await sleep(300);
+  PV.ready=ok;
+  return {ready:ok,ms:Date.now()-t0,why:ok?'':(why||'ждём устойчивого состояния')};
+}
+const readyNote=r=>{
+  if(r.ready){PV.waits=0;return 'Игра загрузилась'+(r.ms>1500?' (ждали '+(r.ms/1000).toFixed(1)+' с)':'')+'.';}
+  PV.waits=(PV.waits||0)+1;
+  return '⏳ Игра ещё не загрузилась (ждали '+Math.round(r.ms/1000)+' с): '+r.why+'. Это НЕ ошибка в коде: не правь файлы из-за этого скриншота. '+
+    (PV.waits>=3?'Ты уже ждал '+PV.waits+' раза подряд: если в консоли нет ошибок, остановись и честно скажи пользователю, что игра слишком долго грузится.':'Вызови preview_wait с ms=10000 и screenshot=true.');
+};
 async function pvLoad(tab,a){
   const F=WS(tab);
   const entry=a&&a.entry?normPath(a.entry):(F['index.html']!=null?'index.html':Object.keys(F).find(k=>/\.html?$/i.test(k)));
   if(!entry)throw new Error('В проекте нет HTML-файла. Создай index.html');
   if(a&&a.width)PV.w=clamp(+a.width||PV.w,320,1920);
   if(a&&a.height)PV.h=clamp(+a.height||PV.h,240,1200);
-  PV.entry=entry;PV.logs=[];PV.seen=0;
+  PV.entry=entry;PV.url=null;PV.remote=false;PV.logs=[];PV.seen=0;PV.waits=0;PV.loaded=false;
   const html=buildPage(tab,entry);const f=pvFrame();
   fit();
-  const loaded=new Promise(r=>{const t=setTimeout(()=>r(false),10000);f.onload=()=>{clearTimeout(t);r(true);};});
-  f.srcdoc=html;
-  const ok=await loaded;await sleep(800);
+  const loaded=new Promise(r=>{const t=setTimeout(()=>r(false),30000);f.onload=()=>{clearTimeout(t);r(true);};});
+  f.removeAttribute('src');f.srcdoc=html;
+  const ok=await loaded;
   PV.loaded=ok;$('pvInfo').textContent=entry+' · '+PV.w+'×'+PV.h;renderPrevBar();
+  PV.r=await pvWaitReady(25000);
+  return ok;
+}
+// Опубликованная игра по ссылке (GitHub Pages): грузим страницу, подставляем <base>, чтобы все файлы игры брались с её сайта
+const gameUrl=()=>{
+  let u=String((S.prefs&&S.prefs.gameUrl)||'').trim();if(!u)return '';
+  if(!/^[a-z][a-z0-9+.-]*:\/\//i.test(u))u='https://'+u;
+  const m=u.match(/^https?:\/\/(?:www\.)?github\.com\/([^\/#?]+)\/([^\/#?]+)/i);
+  if(m){const repo=m[2].replace(/\.git$/,'');u=/\.github\.io$/i.test(repo)?'https://'+repo.toLowerCase()+'/':'https://'+m[1].toLowerCase()+'.github.io/'+repo+'/';}
+  return u;
+};
+async function pvLoadUrl(url,a){
+  url=String(url||'').trim();
+  if(!/^https?:\/\//i.test(url))throw new Error('Нужна ссылка вида https://логин.github.io/игра/');
+  if(a&&a.width)PV.w=clamp(+a.width||PV.w,320,1920);
+  if(a&&a.height)PV.h=clamp(+a.height||PV.h,240,1200);
+  PV.entry=null;PV.url=url;PV.remote=false;PV.logs=[];PV.seen=0;PV.waits=0;PV.loaded=false;
+  const f=pvFrame();fit();
+  let html=null,err='';
+  try{const res=await fetch(url+(url.includes('?')?'&':'?')+'_pv='+Date.now(),{cache:'no-store'});if(!res.ok)throw new Error('ответ сайта '+res.status);html=await res.text();}catch(e){err=e.message||String(e);}
+  const loaded=new Promise(r=>{const t=setTimeout(()=>r(false),30000);f.onload=()=>{clearTimeout(t);r(true);};});
+  if(html!=null&&/<(html|body|script|canvas)\b/i.test(html)){
+    const inj='<base href="'+url.replace(/"/g,'&quot;')+'"><script>'+HOOK+'<\/script>';
+    html=/<head[^>]*>/i.test(html)?html.replace(/<head[^>]*>/i,m=>m+inj):inj+html;
+    f.removeAttribute('src');f.srcdoc=html;
+  }else{PV.remote=true;f.removeAttribute('srcdoc');f.src=url;}
+  const ok=await loaded;
+  PV.loaded=ok;$('pvInfo').textContent=url+' · '+PV.w+'×'+PV.h+(PV.remote?' · внешняя страница':'');renderPrevBar();
+  PV.r=await pvWaitReady(25000);
+  if(!ok&&!PV.remote)throw new Error('Страница игры не загрузилась за 30 с'+(err?' ('+err+')':'')+'. Проверьте ссылку и что GitHub Pages включён.');
   return ok;
 }
 function logsText(){
@@ -1431,6 +1515,7 @@ async function manualShot(d,snaps){
 }
 async function pvShot(){
   const f=pvFrame(),w=f.contentWindow;let d=null;try{d=f.contentDocument;}catch(e){}
+  if(PV.remote)throw new Error(REMOTE_MSG);
   if(!d||!d.documentElement||!PV.loaded)throw new Error('Превью не запущено: вызови preview_open');
   const snaps=[];
   await new Promise(r=>{let n=0;const g=()=>{if(n++)return;
@@ -1458,17 +1543,24 @@ function keyInfo(k){
   return {key,code,kc};
 }
 function fireKey(type,k){
+  if(PV.remote)throw new Error(REMOTE_MSG);
   const f=pvFrame(),w=f.contentWindow,d=f.contentDocument;if(!d)throw new Error('Превью не запущено');
   const i=keyInfo(k);
   const e=new w.KeyboardEvent(type,{key:i.key,code:i.code,bubbles:true,cancelable:true,view:w});
   try{Object.defineProperty(e,'keyCode',{get:()=>i.kc});Object.defineProperty(e,'which',{get:()=>i.kc});}catch(_){}
   (d.activeElement||d.body).dispatchEvent(e);
 }
-async function withShot(text,shot){
+async function pvShotOnly(text){try{return {text,img:await pvShot()};}catch(e){return text+'\n(скриншот не удался: '+e.message+')';}}
+async function withShot(text,shot,max){
   if(!shot)return text;
-  try{return {text,img:await pvShot()};}catch(e){return text+'\n(скриншот не удался: '+e.message+')';}
+  try{
+    const r=await pvWaitReady(max||20000);
+    text+='\n'+readyNote(r);
+    return {text,img:await pvShot()};
+  }catch(e){return text+'\n(скриншот не удался: '+e.message+')';}
 }
 async function pvEval(code){
+  if(PV.remote)throw new Error(REMOTE_MSG);
   const w=pvFrame().contentWindow;if(!w||!PV.loaded)throw new Error('Превью не запущено: вызови preview_open');
   let fn;
   try{fn=new w.Function('return ('+code+'\n)');}catch(e){fn=new w.Function('return (async()=>{'+code+'\n})()');}
@@ -1506,11 +1598,19 @@ async function execTool(tab,name,a){
     case 'delete_file':{const p=normPath(need('path'));exist(p);delete F[p];afterFiles();return 'Удалено '+p+'.';}
     case 'preview_open':{
       const ok=await pvLoad(tab,a);
-      const t=(ok?'Страница загружена: ':'Загрузка не завершилась за 10 с: ')+PV.entry+', '+PV.w+'×'+PV.h+'.\nКонсоль:\n'+logsText();
-      return withShot(t,true);}
+      const t=(ok?'Страница открыта: ':'Загрузка не завершилась за 30 с: ')+PV.entry+', '+PV.w+'×'+PV.h+'.\n'+readyNote(PV.r)+'\nКонсоль:\n'+logsText();
+      return pvShotOnly(t);}
+    case 'preview_game':{
+      let u=a.url?String(a.url).trim():gameUrl();
+      if(!u)throw new Error('Ссылка на игру не задана: попроси пользователя вписать её в Настройки → Подключения → GitHub → «Ссылка на игру» (или передай url).');
+      if(a.path){try{u=new URL(String(a.path),u).href;}catch(e){}}
+      const ok=await pvLoadUrl(u,a);
+      const t='Игра открыта по ссылке '+u+(PV.remote?' (внешняя страница: управлять и снимать экран нельзя)':'')+', '+PV.w+'×'+PV.h+'.\n'+readyNote(PV.r)+'\nКонсоль:\n'+logsText();
+      return PV.remote?t:pvShotOnly(t);}
     case 'preview_screenshot':return withShot('Скриншот '+PV.w+'×'+PV.h+'.\nКонсоль:\n'+logsText(),true);
     case 'preview_key':{
       const keys=Array.isArray(a.keys)?a.keys:[a.keys];if(!keys.length||keys[0]==null)throw new Error('keys пустой');
+      if(PV.remote)throw new Error(REMOTE_MSG);
       if(!PV.loaded)throw new Error('Превью не запущено: вызови preview_open');
       keys.forEach(k=>fireKey('keydown',String(k)));
       await sleep(clamp(+a.hold_ms||150,20,10000));
@@ -1518,6 +1618,7 @@ async function execTool(tab,name,a){
       await sleep(150);
       return withShot('Нажато: '+keys.join(' + ')+'. Консоль:\n'+logsText(),a.screenshot);}
     case 'preview_click':{
+      if(PV.remote)throw new Error(REMOTE_MSG);
       const f=pvFrame(),w=f.contentWindow,d=f.contentDocument;if(!d||!PV.loaded)throw new Error('Превью не запущено: вызови preview_open');
       const x=+need('x'),y=+need('y'),el=d.elementFromPoint(x,y)||d.body;
       const o={bubbles:true,cancelable:true,clientX:x,clientY:y,view:w,button:0};
@@ -1583,9 +1684,9 @@ $('pFiles').onclick=e=>{
 };
 $('pPrev').onclick=async e=>{
   const b=e.target.closest('button[data-a]');if(!b)return;
-  if(b.dataset.a==='pvreload')pvLoad(cur(),{entry:$('pvEntry').value}).catch(x=>toast(x.message));
+  if(b.dataset.a==='pvreload'){const gu=gameUrl();((PV.url||(!wsList(cur()).some(n=>/\.html?$/i.test(n))&&gu))?pvLoadUrl(PV.url||gu):pvLoad(cur(),{entry:$('pvEntry').value})).catch(x=>toast(x.message));}
   else if(b.dataset.a==='pvshot'){
-    try{const d=await pvShot();pendF.push({name:'screenshot.jpg',img:true,c:d,size:Math.round(d.length*0.75)});renderPend();toast('Скриншот добавлен к сообщению');}
+    try{toast('Жду загрузку игры…');const r=await pvWaitReady(25000);if(!r.ready)toast('Игра ещё грузится ('+r.why+'), снимаю как есть');const d=await pvShot();pendF.push({name:'screenshot.jpg',img:true,c:d,size:Math.round(d.length*0.75)});renderPend();toast('Скриншот добавлен к сообщению');}
     catch(x){toast(x.message);}
   }
 };
@@ -2160,7 +2261,7 @@ function renderSlots(){
 function fillSlot(){
   const s=dSlot();SEL=s.id;$('s_name').value=s.name;$('s_url').value=s.url;$('s_key').value=s.key;$('s_model').value=s.model;$('s_format').value=s.format;
   $('s_key').type='password';$('eye').innerHTML=ico('eye');setList(false);setTest('','');renderSlots();
-  $('s_conn').value=s.noProxy?'direct':'proxy';S.prefs.proxy=fixPx(S.prefs.proxy||'');$('p_proxy').value=S.prefs.proxy;pxLabel();$('gh_tok').value=S.prefs.ghToken||'';$('gh_tok').type='password';ghLabel();$('ghRes').textContent='';$('pxRes').textContent='';bad('ghHow',0);bad('pxHow',0);
+  $('s_conn').value=s.noProxy?'direct':'proxy';S.prefs.proxy=fixPx(S.prefs.proxy||'');$('p_proxy').value=S.prefs.proxy;pxLabel();$('gh_tok').value=S.prefs.ghToken||'';$('gh_tok').type='password';$('gh_game').value=S.prefs.gameUrl||'';$('gameRes').textContent='';ghLabel();$('ghRes').textContent='';$('pxRes').textContent='';bad('ghHow',0);bad('pxHow',0);
 }
 function flushSlot(){
   const s=dSlot();if(!s)return;
@@ -2259,6 +2360,14 @@ $('ghTest').onclick=async()=>{
   try{const me=await ghJson('/user');const rp=await ghJson('/user/repos?per_page=100&sort=pushed');
     bad('ghHow',0);r.className='status ok';r.textContent='Вход выполнен: '+me.login+'. Доступно репозиториев: '+rp.length+(rp.length?' (например '+rp.slice(0,3).map(x=>x.name).join(', ')+')':'')+'. Если сборки нужны, у токена должно быть право workflow.';}
   catch(e){bad('ghHow',1);r.className='status err';r.textContent=e.message;}
+};
+$('gh_game').addEventListener('input',()=>{S.prefs.gameUrl=$('gh_game').value.trim();save();});
+$('gameOpen').onclick=async()=>{
+  const r=$('gameRes'),u=gameUrl();r.className='status';
+  if(!u){r.className='status err';r.textContent='Сначала впишите ссылку на игру.';return;}
+  r.textContent='Открываю и жду загрузку игры…';
+  try{closeCfg();showPanel('preview');await pvLoadUrl(u);toast(PV.r&&PV.r.ready?'Игра загрузилась':'Игра открыта, но ещё грузится');}
+  catch(e){openCfg('conn');r.className='status err';r.textContent=e.message;}
 };
 $('ghEye').onclick=()=>{const k=$('gh_tok');k.type=k.type==='password'?'text':'password';$('ghEye').innerHTML=ico(k.type==='password'?'eye':'eyeoff');};
 $('pxClear').onclick=()=>{if(!(S.prefs.proxy||'').trim())return;if(!confirm('Стереть адрес прокси?'))return;S.prefs.proxy='';$('p_proxy').value='';save();pxLabel();$('pxRes').textContent='Адрес стёрт.';};
