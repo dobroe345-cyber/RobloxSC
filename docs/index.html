@@ -2707,6 +2707,18 @@ const fmtP=v=>v==null?'?':v===0?'$0':'$'+(+v.toFixed(v<1?3:2));
 const fmtCtx=n=>n>=1e6?(n/1e6).toFixed(n%1e6?1:0)+'M':n>=1000?Math.round(n/1000)+'K':String(n);
 const priceKey=m=>m.pin!=null?m.pin+(m.pout||0)/4:(m.pout!=null?m.pout:null);
 const hue=str=>{let h=0;for(const c of str)h=(h*31+c.charCodeAt(0))%360;return h;};
+const REFP=[ // справочные цены $/1M [вход,выход], ориентир по официальным тарифам; порядок важен
+[/opus/i,[15,75]],[/sonnet/i,[3,15]],[/haiku/i,[0.8,4]],[/fable|mythos/i,[10,50]],
+[/gpt-?5.*(nano)/i,[0.05,0.4]],[/gpt-?5.*mini/i,[0.25,2]],[/gpt-?5/i,[1.25,10]],[/gpt-?4\.1.*nano/i,[0.1,0.4]],[/gpt-?4\.1.*mini/i,[0.4,1.6]],[/gpt-?4\.1/i,[2,8]],
+[/gpt-?4o.*mini/i,[0.15,0.6]],[/gpt-?4o/i,[2.5,10]],[/gpt-?4/i,[10,30]],[/gpt-?3\.5/i,[0.5,1.5]],[/(^|[^a-z])o[134](-|$)/i,[3,12]],
+[/gemini.*flash.*lite/i,[0.1,0.4]],[/gemini.*flash/i,[0.3,2.5]],[/gemini.*pro/i,[1.25,10]],[/gemma/i,[0.1,0.2]],
+[/grok.*mini/i,[0.3,0.5]],[/grok/i,[3,15]],[/deepseek.*(r1|reason)/i,[0.55,2.2]],[/deepseek/i,[0.27,1.1]],
+[/qwen.*(max|plus)/i,[0.4,1.2]],[/qwen/i,[0.1,0.3]],[/kimi|moonshot/i,[0.6,2.5]],[/glm/i,[0.6,2.2]],[/minimax/i,[0.3,1.2]],
+[/mistral.*(large)/i,[2,6]],[/mistral|mixtral|codestral/i,[0.2,0.6]],[/llama.*(405)/i,[3,3]],[/llama|nemotron/i,[0.15,0.4]],[/command/i,[2.5,10]]
+];
+function applyRef(){MLIST.forEach(id=>{const m=MMETA[id]||(MMETA[id]={id});if(m.pin!=null||m.pout!=null||m.call!=null||m.ref)return;
+  if(isFree(m)){m.pin=0;m.pout=0;m.ref=true;return;}
+  const r=REFP.find(x=>x[0].test(id));if(r){m.pin=r[1][0];m.pout=r[1][1];m.ref=true;}});}
 const MC={f:'all',s:'site',q:'',est:false,note:''};
 function mcIcon(m,p){
   const fav=p.d?'https://www.google.com/s2/favicons?domain='+encodeURIComponent(p.d)+'&sz=64':'';
@@ -2727,27 +2739,31 @@ function renderCatalog(){
   if(MC.s==='az')l.sort((a,b)=>a.m.id.localeCompare(b.m.id));
   else if(MC.s==='cheap'||MC.s==='exp'){
     const k=x=>{const v=priceKey(x.m);return v==null?null:v;};
-    l.sort((a,b)=>{const A=k(a),B=k(b);if(A==null&&B==null)return 0;if(A==null)return 1;if(B==null)return -1;return MC.s==='cheap'?A-B:B-A;});}
-  const hasPrice=all.some(x=>x.m.pin!=null||x.m.pout!=null);
-  $('mcCount').textContent=MHOST+': '+(l.length!==all.length?l.length+' из ':'')+all.length+(MC.note?' · '+MC.note:(hasPrice?'':' · цены сайт не сообщает'));
-  $('mcList').innerHTML=l.length?l.map(x=>{const m=x.m,pr=(m.pin!=null||m.pout!=null)?`<i class="pr">${MC.est||m.est?'≈ ':''}вход ${fmtP(m.pin)} · выход ${fmtP(m.pout)} / 1M</i>`:(m.call!=null?`<i class="pr">≈ ${fmtP(m.call)} за запрос</i>`:'');
+    l.sort((a,b)=>{const A=k(a),B=k(b);if(A==null&&B==null)return 0;if(A==null)return 1;if(B==null)return -1;return (MC.s==='cheap'?A-B:B-A)||a.m.id.localeCompare(b.m.id);});}
+  const hasPrice=all.some(x=>(x.m.pin!=null||x.m.pout!=null)&&!x.m.ref),hasRef=all.some(x=>x.m.ref);
+  $('mcCount').textContent=MHOST+': '+(l.length!==all.length?l.length+' из ':'')+all.length+(MC.note?' · '+MC.note:(hasPrice?'':(hasRef?' · сайт цен не даёт, показаны ≈ справочные':' · сайт цен не сообщает')));
+  $('mcList').innerHTML=l.length?l.map(x=>{const m=x.m,pr=(m.pin!=null||m.pout!=null)?`<i class="pr">${MC.est||m.est||m.ref?'≈ ':''}вход ${fmtP(m.pin)} · выход ${fmtP(m.pout)} / 1M</i>`:(m.call!=null?`<i class="pr">≈ ${fmtP(m.call)} за запрос</i>`:'');
     return `<button class="mc-card${m.id===cur?' on':''}" data-m="${esc(m.id)}">${mcIcon(m,x.p)}<span class="mc-bd"><b>${esc(m.name||m.id)}</b>${m.name&&m.name!==m.id?`<small>${esc(m.id)}</small>`:''}`+
       `<span class="mc-meta"><i>${esc(x.p.n)}</i>${m.ctx?`<i>${fmtCtx(m.ctx)} контекст</i>`:''}${pr}${x.free?'<i class="fr">FREE</i>':''}</span></span></button>`;}).join(''):'<div class="mc-none">Ничего не найдено</div>';
   $('mcList').querySelectorAll('.mc-ic img').forEach(im=>{im.onerror=()=>{const fb=im.dataset.fb;if(fb){im.dataset.fb='';im.src=fb;return;}
     const sp=im.parentNode;sp.style.background='hsl('+sp.dataset.h+',45%,45%)';sp.textContent=sp.dataset.l;};});
 }
 async function fetchPricing(sl){
-  // сайты на New API / One API отдают таблицу цен отдельно; формула: коэффициент 1 = $2 за 1M входных токенов
-  try{
-    const u=new URL(parseUrl(sl.url).base).origin+'/api/pricing';
-    const res=await fetch(viaProxy(u,sl),{headers:{'Authorization':'Bearer '+sl.key,'Accept':'application/json'}});
-    if(!res.ok)return 0;const j=await res.json();const arr=Array.isArray(j.data)?j.data:(Array.isArray(j)?j:[]);let n=0;
-    arr.forEach(d=>{const id=d.model_name||d.model,m=MMETA[id];if(!m||m.pin!=null||m.pout!=null)return;
-      if(d.quota_type===1&&d.model_price!=null){m.call=+d.model_price;m.est=true;n++;return;}
-      const r=parseFloat(d.model_ratio);if(!isFinite(r))return;const c=parseFloat(d.completion_ratio);
-      m.pin=r*2;m.pout=r*2*(isFinite(c)&&c>0?c:1);m.est=true;n++;});
-    return n;
-  }catch(e){return 0;}
+  // New API / One API: /api/pricing (коэффициент 1 = $2 за 1M входных); пробуем и другие частые адреса
+  const o=new URL(parseUrl(sl.url).base).origin;let n=0;
+  for(const path of ['/api/pricing','/api/models','/api/v1/models','/pricing']){
+    try{
+      const res=await fetch(viaProxy(o+path,sl),{headers:{'Authorization':'Bearer '+sl.key,'Accept':'application/json'}});
+      if(!res.ok)continue;const j=await res.json();const arr=Array.isArray(j.data)?j.data:(Array.isArray(j.models)?j.models:(Array.isArray(j)?j:[]));
+      arr.forEach(d=>{const id=d.model_name||d.model||d.id,m=MMETA[id];if(!m||m.pin!=null||m.pout!=null)return;
+        const x=modelMeta(d);if(x.pin!=null||x.pout!=null){m.pin=x.pin;m.pout=x.pout;n++;return;}
+        if(d.quota_type===1&&d.model_price!=null){m.call=+d.model_price;m.est=true;n++;return;}
+        const r=parseFloat(d.model_ratio);if(!isFinite(r))return;const c=parseFloat(d.completion_ratio);
+        m.pin=r*2;m.pout=r*2*(isFinite(c)&&c>0?c:1);m.est=true;n++;});
+      if(n)break;
+    }catch(e){}
+  }
+  return n;
 }
 async function openCatalog(){
   MC.f='all';MC.q='';MC.s='site';MC.note='';$('mcSearch').value='';$('mcSort').value='site';
@@ -2755,8 +2771,9 @@ async function openCatalog(){
   const sl=dSlot();
   if(!MLIST.some(id=>MMETA[id]&&(MMETA[id].pin!=null||MMETA[id].pout!=null))&&sl.key){
     MC.note='ищу цены…';renderCatalog();
-    const n=await fetchPricing(sl);MC.note=n?'цены ≈ по данным сайта':'';renderCatalog();
+    const n=await fetchPricing(sl);MC.note=n?'цены ≈ по данным сайта':'';
   }
+  applyRef();renderCatalog();
 }
 $('mmore').onclick=openCatalog;
 $('mcBack').onclick=()=>$('mcat').classList.add('hidden');
