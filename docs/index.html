@@ -432,7 +432,7 @@ header{gap:4px;min-height:56px}
     <div id="composer">
       <div id="mpop" class="hidden"></div>
       <div id="att" class="hidden"></div>
-      <div id="mrow"><button class="mchip" id="mdlBtn" aria-label="Выбрать модель"><span class="mdot"></span><span id="mdlName"></span><span class="car"><svg class="i"><use href="#i-chevd"/></svg></span></button><button class="mchip" id="agBtn" aria-label="Режим агента"></button></div>
+      <div id="mrow"><button class="mchip" id="mdlBtn" aria-label="Выбрать модель"><span class="mdot"></span><span id="mdlName"></span><span class="car"><svg class="i"><use href="#i-chevd"/></svg></span></button><button class="mchip" id="agBtn" aria-label="Режим агента"></button><button class="mchip" id="ghBtn" aria-label="Подключение GitHub"></button></div>
       <div class="box">
         <button class="ib" id="attBtn" aria-label="Прикрепить файлы"><svg class="i"><use href="#i-clip"/></svg></button>
         <input type="file" id="fi" multiple class="hidden">
@@ -1247,7 +1247,7 @@ async function fetchModels(sl){
 // ---------- Инструменты агента ----------
 
 // ---------- GitHub: вход по токену, чтение/запись репозиториев, сборка (Actions) ----------
-const GH={tok:()=>String((S.prefs&&S.prefs.ghToken)||'').trim()};
+const GH={tok:()=>(S.prefs&&S.prefs.ghOn===false)?'':String((S.prefs&&S.prefs.ghToken)||'').trim()};
 async function ghApi(path,opt){
   const tk=GH.tok();if(!tk)throw new Error('GitHub не подключён: Настройки → Модель → GitHub');
   const url=path.startsWith('http')?path:'https://api.github.com'+path;
@@ -2896,6 +2896,7 @@ function renderMrow(){
   $('mdlName').textContent=s.name+(s.model&&s.model!==s.name?' · '+s.model:'');
   $('mdlBtn').classList.toggle('warn',!slotReady(s));
   const a=$('agBtn');a.innerHTML=ico('bot')+'Агент: '+(S.prefs.agent?'вкл':'выкл');a.classList.toggle('on',!!S.prefs.agent);
+  const g=$('ghBtn');g.innerHTML=ico('upload')+'GitHub: '+(S.prefs.ghOn===false?'выкл':'вкл');g.classList.toggle('on',S.prefs.ghOn!==false);g.classList.toggle('warn',S.prefs.ghOn!==false&&!String(S.prefs.ghToken||'').trim());
 }
 function openPicker(){
   const p=$('mpop');
@@ -2909,6 +2910,7 @@ function openPicker(){
   p.classList.remove('hidden');
 }
 $('mdlBtn').onclick=openPicker;
+$('ghBtn').onclick=()=>{const on=S.prefs.ghOn===false;S.prefs.ghOn=on;save();renderMrow();toast(on?(String(S.prefs.ghToken||'').trim()?'GitHub включён':'GitHub включён, но токена нет: Настройки → Подключения'):'GitHub выключен: ИИ не видит ваши репозитории');};
 $('agBtn').onclick=()=>{S.prefs.agent=!S.prefs.agent;save();renderMrow();toast(S.prefs.agent?'Режим агента включён':'Режим агента выключен');};
 $('mpop').onclick=e=>{
   const ed=e.target.closest('[data-e]'),add=e.target.closest('[data-add]'),row=e.target.closest('.mrowi');
