@@ -162,11 +162,11 @@ span.chip{cursor:default}
 .f{margin-bottom:14px}
 .f label{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:5px}
 .f small{display:block;font-size:12.5px;color:var(--muted);margin-top:5px;line-height:1.4}
-.f input,.f select,.f textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;
+.f input,.f select,.f textarea,.mc-tools input,.mc-tools select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;
   background:var(--card);color:var(--text);font-size:16px;font-family:inherit;-webkit-appearance:none;appearance:none}
-.f input:focus,.f select:focus,.f textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.f input:focus,.f select:focus,.f textarea:focus,.mc-tools input:focus,.mc-tools select:focus{outline:2px solid var(--accent);outline-offset:-1px}
 .f textarea{resize:vertical;min-height:90px}
-.f select{padding-right:34px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2373726c' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.f select,.mc-tools select{padding-right:34px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2373726c' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
 .row{display:flex;gap:6px}.row input{flex:1;min-width:0}
 .b{padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:15px;cursor:pointer;white-space:nowrap}
 .b.sm{padding:7px 11px;font-size:13.5px}
@@ -241,6 +241,32 @@ span.chip{cursor:default}
   #modal .card-b{padding:14px 14px 24px}
 }
 
+/* ---- каталог моделей ---- */
+.mcat{position:fixed;inset:0;z-index:80;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
+.mcat.hidden{display:none}
+.mc-top{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--border)}
+.mc-top b{font-size:17px}.mc-top span{margin-left:auto;color:var(--muted);font-size:13px;text-align:right}
+.mc-tools{display:flex;gap:8px;padding:10px 14px 4px}
+.mc-tools input{flex:1;min-width:0}.mc-tools select{width:auto;max-width:48%;flex:none}
+.mc-chips{display:flex;gap:6px;padding:6px 14px 10px;overflow-x:auto;-webkit-overflow-scrolling:touch;border-bottom:1px solid var(--border)}
+.mc-chips button{flex:none;border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:99px;padding:6px 12px;font-size:13.5px;cursor:pointer;white-space:nowrap}
+.mc-chips button small{color:var(--muted);margin-left:4px}
+.mc-chips button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.mc-chips button.on small{color:#ffffffcc}
+.mc-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 14px calc(env(safe-area-inset-bottom) + 20px);display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:10px;align-content:start}
+.mc-card{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:14px;padding:12px;cursor:pointer}
+.mc-card.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.mc-ic{flex:none;width:40px;height:40px;border-radius:11px;background:var(--hover);display:flex;align-items:center;justify-content:center;overflow:hidden;font-weight:700;color:#fff;font-size:17px}
+.mc-ic img{width:26px;height:26px;object-fit:contain}
+.mc-bd{min-width:0;flex:1;display:flex;flex-direction:column;gap:3px}
+.mc-bd b{font-size:15px;overflow-wrap:anywhere}
+.mc-bd small{color:var(--muted);font-size:12px;font-family:ui-monospace,Menlo,monospace;overflow-wrap:anywhere}
+.mc-meta{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.mc-meta i{font-style:normal;font-size:12px;padding:2px 8px;border-radius:99px;background:var(--hover2);color:var(--muted)}
+.mc-meta i.pr{color:var(--text)}
+.mc-meta i.fr{background:#2e8b5722;color:#2e8b57;font-weight:600}
+.mc-none{grid-column:1/-1;color:var(--muted);text-align:center;padding:30px 0}
+@media(max-width:700px){.mc-list{grid-template-columns:1fr}.mc-tools select{max-width:46%}}
 /* ---- модель в чате ---- */
 #composer{position:relative}
 #mrow{max-width:760px;margin:0 auto 6px;display:flex;gap:6px;flex-wrap:wrap}
@@ -342,7 +368,7 @@ header{gap:4px;min-height:56px}
 .cats button,.ptabs button{height:36px;display:inline-flex;align-items:center;border-radius:10px}
 .slots button{height:36px;display:inline-flex;align-items:center;gap:7px;border-radius:10px}
 .slots button.on .mdot{background:#fff}
-.f input,.f select{height:44px;border-radius:12px}
+.f input,.f select,.mc-tools input,.mc-tools select{height:44px;border-radius:12px}
 .f textarea{border-radius:12px}
 .mini{height:40px;border-radius:12px}
 #newTab{height:44px;border-radius:12px}
@@ -454,7 +480,7 @@ header{gap:4px;min-height:56px}
             <div class="row"><input id="s_key" type="password" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="b" id="eye" aria-label="Показать ключ"><svg class="i"><use href="#i-eye"/></svg></button></div></div>
           <div class="f"><label for="s_model">Модель</label>
             <div class="row"><input id="s_model" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="ID модели, как на сайте"><button class="b" id="loadModels">Список</button></div>
-            <div id="f_models" class="hidden mbox"><div class="mhead"><span id="mcount"></span><input id="mfilter" placeholder="Поиск по списку" autocapitalize="off" autocorrect="off" spellcheck="false"></div><div id="mitems"></div></div></div>
+            <div id="f_models" class="hidden mbox"><div class="mhead"><span id="mcount"></span><input id="mfilter" placeholder="Поиск по списку" autocapitalize="off" autocorrect="off" spellcheck="false"><button class="b sm" id="mmore">Подробнее</button></div><div id="mitems"></div></div></div>
         </div>
         <div class="sec">
           <div class="f"><label for="s_conn">Соединение</label>
@@ -511,6 +537,12 @@ header{gap:4px;min-height:56px}
     </div>
     <div class="cfg-back"><button class="b" id="saveCfg"><svg class="i"><use href="#i-back"/></svg>Назад</button><span class="hint">Изменения сохраняются сразу</span></div>
   </div>
+</div>
+<div id="mcat" class="mcat hidden" role="dialog" aria-label="Каталог моделей">
+  <div class="mc-top"><button class="b" id="mcBack"><svg class="i"><use href="#i-back"/></svg>Назад</button><b id="mcTitle">Модели</b><span id="mcCount"></span></div>
+  <div class="mc-tools"><input id="mcSearch" placeholder="Поиск модели" autocapitalize="off" autocorrect="off" spellcheck="false"><select id="mcSort"><option value="site">Как на сайте</option><option value="cheap">Сначала дешёвые</option><option value="exp">Сначала дорогие</option><option value="az">По алфавиту</option></select></div>
+  <div class="mc-chips" id="mcChips"></div>
+  <div class="mc-list" id="mcList"></div>
 </div>
 <div id="toast" class="hidden"></div>
 
@@ -746,6 +778,11 @@ function toolInfo(p){
     case 'preview_eval':return ['flask','Проверяет состояние игры',''];
     case 'preview_wait':return ['clock','Ждёт '+(a.ms||'')+' мс',''];
     case 'preview_logs':return ['terminal','Консоль превью',''];
+    case 'preview_state':return ['eye',run?'Смотрит, что на экране игры':'Состояние экрана игры',''];
+    case 'preview_goto':return ['play',(run?'Идёт к экрану: ':'Вышел на экран: ')+(a.stage||''),''];
+    case 'preview_wait_for':return ['clock',run?'Ждёт'+(a.phase?' экран «'+a.phase+'»':a.text?' «'+a.text+'»':' загрузку'):'Дождался',''];
+    case 'preview_click_text':return ['cursor','Нажимает «'+(a.text||'')+'»',''];
+    case 'preview_sequence':return ['keyboard',run?'Ходит по игре':'Прошёл по игре',(a.steps||[]).length?(a.steps||[]).length+' шагов':''];
     case 'run_js':return ['terminal',run?'Выполняет JavaScript':'Выполнил JavaScript',''];
     case 'run_python':return ['terminal',run?'Выполняет Python':'Выполнил Python',''];
     case 'github_repos':return ['folder',run?'Смотрит репозитории GitHub':'Репозитории GitHub',''];
@@ -1176,6 +1213,24 @@ async function callAPI(sl,pf,mk,cb,signal,useTools){
   }
   throw new Error(new Set(errs.map(x=>x[1])).size===1?errs[0][1]:errs.map(([f,m])=>FMT_NAME[f]+' — '+m).join('\n'));
 }
+let MMETA={};
+function modelMeta(m){
+  if(typeof m==='string')return {id:m};
+  const id=m.id||m.name||m.model;if(!id)return null;
+  const o={id:String(id)},num=v=>{const x=parseFloat(v);return isFinite(x)?x:null;};
+  o.name=(m.name&&m.name!==id)?String(m.name):String(m.display_name||m.title||'');
+  o.owner=String(m.owned_by||m.provider||m.vendor||m.organization||'');
+  o.ctx=+(m.context_length||m.context_window||m.max_context||m.max_input_tokens||(m.top_provider&&m.top_provider.context_length)||0)||0;
+  o.icon=String(m.icon||m.icon_url||m.logo||m.logo_url||m.image||m.avatar||'');
+  o.free=!!(m.is_free||m.free);
+  const p=(m.pricing&&typeof m.pricing==='object')?m.pricing:(m.price&&typeof m.price==='object'?m.price:null);
+  let pi=null,po=null;
+  if(p){pi=num(p.prompt!=null?p.prompt:p.input!=null?p.input:p.in);po=num(p.completion!=null?p.completion:p.output!=null?p.output:p.out);}
+  else if(m.input_cost_per_token!=null||m.output_cost_per_token!=null){pi=num(m.input_cost_per_token);po=num(m.output_cost_per_token);}
+  if(pi!=null||po!=null){const tiny=v=>v!=null&&v>0&&v<0.001;const k=(tiny(pi)||tiny(po)||m.input_cost_per_token!=null)?1e6:1;
+    o.pin=pi==null?null:pi*k;o.pout=po==null?null:po*k;}
+  return o;
+}
 async function fetchModels(sl){
   const {base}=parseUrl(sl.url),errs=[];
   for(const fmt of formats(sl)){
@@ -1183,7 +1238,7 @@ async function fetchModels(sl){
       const res=await fetch(viaProxy(base+'/models',sl),{headers:headersFor(sl,fmt,false)});
       if(!res.ok){errs.push(await readError(res));continue;}
       const j=await res.json();let arr=j.data||j.models||(Array.isArray(j)?j:[]);if(!Array.isArray(arr))arr=Object.keys(arr);
-      return [...new Set(arr.map(m=>typeof m==='string'?m:(m.id||m.name||m.model)).filter(Boolean))];
+      MMETA={};const ids=[];arr.forEach(x=>{let o=null;try{o=modelMeta(x);}catch(e){}if(o&&o.id&&!MMETA[o.id]){MMETA[o.id]=o;ids.push(o.id);}});return ids;
     }catch(e){errs.push(e.message+netHint(e));}
   }
   throw new Error(errs.join('\n'));
@@ -1335,6 +1390,7 @@ function runInWorker(fn,payload,ms){
   });
 }
 const runFmt=(r,extra)=>cap((r.out||'(вывода нет)')+(r.err&&typeof r.err==='string'?'\nОШИБКА: '+r.err:'')+(r.msg?'\nОШИБКА: '+r.msg:'')+(extra||''),8000);
+const STAGE_P={type:'string',enum:['game','menu','settings','loading','raw'],description:'Какой экран нужен на скриншоте (реши по тому, что ты правил): game — сама игра (по умолчанию: приложение дождётся загрузки, нажмёт «Играть» и войдёт в игру), menu — главное меню, settings — экран настроек, loading — экран загрузки (снимок ВО ВРЕМЯ загрузки), raw — как есть, без ожидания и нажатий.'};
 const TOOLS=[
   {name:'list_files',description:'Список файлов проекта с размерами.',schema:{type:'object',properties:{}}},
   {name:'read_file',description:'Прочитать файл проекта. Для больших файлов используй диапазон строк.',schema:{type:'object',properties:{path:{type:'string'},start_line:{type:'integer'},end_line:{type:'integer'}},required:['path']}},
@@ -1353,15 +1409,20 @@ const TOOLS=[
   {name:'github_dispatch',description:'Запустить workflow вручную (нужен on: workflow_dispatch). workflow — имя файла, например build.yml.',schema:{type:'object',properties:{repo:{type:'string'},workflow:{type:'string'},ref:{type:'string'}},required:['workflow']}},
   {name:'github_pages',description:'Узнать адрес сайта GitHub Pages репозитория (куда выкладывается собранная игра).',schema:{type:'object',properties:{repo:{type:'string'}}}},
   {name:'delete_file',description:'Удалить файл проекта.',schema:{type:'object',properties:{path:{type:'string'}},required:['path']}},
-  {name:'preview_open',description:'Собрать страницу из файлов проекта, запустить в превью, дождаться полной загрузки игры и вернуть консоль и скриншот. Вызывай после каждой заметной правки.',schema:{type:'object',properties:{entry:{type:'string',description:'HTML-файл, по умолчанию index.html'},width:{type:'integer'},height:{type:'integer'}}}},
-  {name:'preview_game',description:'Открыть в превью опубликованную игру по ссылке пользователя (Настройки → Подключения → «Ссылка на игру», GitHub Pages) и играть в ней: ходить, нажимать клавиши, кликать, делать скриншоты, читать консоль. Сам ждёт, пока игра загрузится. Если ты закоммитил правки, подожди ~1 минуту (деплой Pages) и открой снова. url — другая ссылка вместо сохранённой, path — страница внутри игры.',schema:{type:'object',properties:{url:{type:'string'},path:{type:'string'},width:{type:'integer'},height:{type:'integer'}}}},
-  {name:'preview_screenshot',description:'Сделать скриншот текущего превью (видишь картинку). Сам ждёт, пока игра загрузится. Чтобы снять именно то, что нужно показать, передай selector (CSS-селектор элемента, например "#menu" или "canvas") или область x, y, w, h в пикселях страницы; без них снимается весь экран.',schema:{type:'object',properties:{selector:{type:'string'},x:{type:'number'},y:{type:'number'},w:{type:'number'},h:{type:'number'}}}},
-  {name:'preview_reload',description:'Обновить страницу в превью (как F5): заново загрузить игру из файлов проекта или по ссылке, дождаться загрузки и вернуть консоль и скриншот. Вызывай после правок, после коммита (для игры по ссылке подожди ~1 минуту деплоя Pages) и когда игра зависла.',schema:{type:'object',properties:{width:{type:'integer'},height:{type:'integer'}}}},
+  {name:'preview_open',description:'Собрать страницу из файлов проекта, запустить в превью, дождаться полной загрузки игры и вернуть консоль и скриншот. Вызывай после каждой заметной правки.',schema:{type:'object',properties:{entry:{type:'string',description:'HTML-файл, по умолчанию index.html'},stage:STAGE_P,width:{type:'integer'},height:{type:'integer'}}}},
+  {name:'preview_game',description:'Открыть в превью опубликованную игру по ссылке пользователя (Настройки → Подключения → «Ссылка на игру», GitHub Pages) и играть в ней: ходить, нажимать клавиши, кликать, делать скриншоты, читать консоль. Сам ждёт, пока игра загрузится. Если ты закоммитил правки, подожди ~1 минуту (деплой Pages) и открой снова. url — другая ссылка вместо сохранённой, path — страница внутри игры.',schema:{type:'object',properties:{url:{type:'string'},path:{type:'string'},stage:STAGE_P,width:{type:'integer'},height:{type:'integer'}}}},
+  {name:'preview_screenshot',description:'Сделать скриншот текущего превью (видишь картинку). Сам ждёт, пока игра загрузится. Чтобы снять именно то, что нужно показать, передай selector (CSS-селектор элемента, например "#menu" или "canvas") или область x, y, w, h в пикселях страницы; без них снимается весь экран.',schema:{type:'object',properties:{selector:{type:'string'},x:{type:'number'},y:{type:'number'},w:{type:'number'},h:{type:'number'},stage:STAGE_P}}},
+  {name:'preview_reload',description:'Обновить страницу в превью (как F5): заново загрузить игру из файлов проекта или по ссылке, дождаться загрузки и вернуть консоль и скриншот. Вызывай после правок, после коммита (для игры по ссылке подожди ~1 минуту деплоя Pages) и когда игра зависла.',schema:{type:'object',properties:{stage:STAGE_P,width:{type:'integer'},height:{type:'integer'}}}},
   {name:'preview_key',description:'Нажать клавиши в превью (например ["ArrowRight"], ["w"], ["Space"]) и удерживать hold_ms миллисекунд. Для игры.',schema:{type:'object',properties:{keys:{type:'array',items:{type:'string'}},hold_ms:{type:'integer'},screenshot:{type:'boolean'}},required:['keys']}},
   {name:'preview_click',description:'Клик мышью в превью по координатам (в пикселях страницы).',schema:{type:'object',properties:{x:{type:'number'},y:{type:'number'},screenshot:{type:'boolean'}},required:['x','y']}},
   {name:'preview_eval',description:'Выполнить JavaScript внутри страницы превью и вернуть результат (читать состояние игры, координаты, счёт).',schema:{type:'object',properties:{code:{type:'string'}},required:['code']}},
   {name:'preview_wait',description:'Подождать, пока игра/анимация идёт или догружается (до 10000 мс). Если скриншот показал «игра ещё не загрузилась», вызови это с ms=10000 и screenshot=true.',schema:{type:'object',properties:{ms:{type:'integer'},screenshot:{type:'boolean'}},required:['ms']}},
-  {name:'preview_logs',description:'Показать последние сообщения консоли и ошибки превью.',schema:{type:'object',properties:{}}}
+  {name:'preview_logs',description:'Показать последние сообщения консоли и ошибки превью.',schema:{type:'object',properties:{}}},
+  {name:'preview_state',description:'Узнать, что сейчас на экране игры: загрузка, главное меню, настройки или сама игра; какие кнопки видны (с координатами), меняется ли картинка на холсте, идут ли загрузки. Вызывай, когда не уверен, что видишь.',schema:{type:'object',properties:{screenshot:{type:'boolean'}}}},
+  {name:'preview_goto',description:'Довести игру до нужного экрана самому: game — дождаться загрузки, нажать «Играть» и попасть в игру; menu — дождаться главного меню; settings — открыть настройки из меню; loading — снять загрузку. Возвращает скриншот и список того, что было нажато.',schema:{type:'object',properties:{stage:STAGE_P,screenshot:{type:'boolean'}},required:['stage']}},
+  {name:'preview_wait_for',description:'Ждать условия (до 60 с): phase (loading|menu|settings|game), text / gone_text (надпись на экране появилась / исчезла), selector / gone_selector (элемент виден / пропал), js (выражение стало истинным). Без условий просто ждёт конца загрузки.',schema:{type:'object',properties:{phase:{type:'string'},text:{type:'string'},gone_text:{type:'string'},selector:{type:'string'},gone_selector:{type:'string'},js:{type:'string'},timeout_ms:{type:'integer'},screenshot:{type:'boolean'}}}},
+  {name:'preview_click_text',description:'Нажать кнопку или ссылку по тексту на экране (например "Играть", "Настройки"; можно регулярное выражение /играть|start/i). Для меню, нарисованного на холсте, используй preview_click по координатам со скриншота.',schema:{type:'object',properties:{text:{type:'string'},index:{type:'integer'},screenshot:{type:'boolean'}},required:['text']}},
+  {name:'preview_sequence',description:'Цепочка действий за один вызов с одним скриншотом в конце: ходить по карте, поворачивать камеру, нажимать кнопки. Шаги: {keys:["w"],hold_ms:800}, {click:[x,y]}, {click_text:"Играть"}, {look:[dx,dy]} (поворот мышью), {wait_ms:500}, {eval:"выражение"}. До 30 шагов.',schema:{type:'object',properties:{steps:{type:'array',items:{type:'object',additionalProperties:true}},screenshot:{type:'boolean'}},required:['steps']}}
 ];
 const activeTools=()=>TOOLS.filter(x=>!/^github_/.test(x.name)||GH.tok());
 const AGENT=[
@@ -1373,8 +1434,11 @@ const AGENT=[
   '- Бинарные файлы пользователя (wasm, jar, class, glb, exe и др.) приложение уже разобрало в текст: для каждого есть <имя>.report.txt (структура, импорты/экспорты, методы, строки), для wasm ещё <имя>.wat.txt (дизассемблер), для glb <имя>.json. Читай их через read_file; сырые байты — через hexdump. Не говори, что не умеешь читать бинарные файлы.',
   '- Игры и сайты делай на обычных HTML/CSS/JS. Файлы проекта подключаются через <script src="game.js"> и <link rel="stylesheet" href="style.css">. ES-модули с относительными импортами не работают. Внешние библиотеки подключай по URL с CDN.',
   '- Закончив, обязательно проверь: preview_open → прочитай ошибки консоли и посмотри скриншот → поиграй (preview_key, preview_click, preview_eval для чтения состояния) → снова скриншот. Найденные ошибки исправляй и проверяй заново, пока всё не заработает.',
-  '- Скриншоты приложение делает САМО, только когда игра полностью загрузилась (ждёт до ~25 с). Если в ответе написано «ещё не загрузилась», это не ошибка кода: ничего не правь, а вызови preview_wait (ms=10000, screenshot=true). Исправляй код только по ошибкам консоли или по скриншоту уже загрузившейся игры.',
-  '- Скриншот делай того, что нужно показать: preview_screenshot с selector (например "#menu", "canvas") или областью x, y, w, h. Когда в консоли появляется ошибка, приложение само прикладывает скриншот экрана: смотри на него и на текст ошибки. После правок или коммита обновляй страницу через preview_reload.',
+  '- Скриншоты приложение делает САМО и только когда игра загрузилась (ждёт до ~25 с, учитывает сеть, wasm и пустой холст). Если в ответе «ещё не загрузилась» — это не ошибка кода: ничего не правь, вызови preview_wait_for (phase:"game" или "menu", timeout_ms:30000) и повтори. Исправляй код только по ошибкам консоли или по скриншоту уже загрузившейся игры.',
+  '- ПЕРЕД проверкой реши, что должно быть на скриншоте, исходя из того, что ты правил, и передай это в stage у preview_open / preview_game / preview_reload / preview_screenshot / preview_goto: «loading» — правка экрана загрузки (снимок делается ВО ВРЕМЯ загрузки); «menu» — главное меню; «settings» — экран настроек (приложение само нажмёт «Настройки»); «game» — всё остальное: геймплей, карта, объекты, физика, камера, HUD. Если stage не указан, на странице с холстом работает «game»: приложение само дождётся загрузки, нажмёт «Играть» в меню и доведёт до игры. Меню и загрузку, которые ты не трогал, снимать не нужно.',
+  '- После входа в игру дойди до места правки: preview_sequence (шаги keys/hold_ms, click, click_text, look, wait_ms, eval) — ходи по карте, ищи изменённый объект, читай координаты через preview_eval и только там снимай скриншот. Снимок должен показывать именно то, что ты исправил: если на нём загрузка, меню или не то место, это не результат — иди дальше или жди.',
+  '- Если непонятно, что на экране, вызови preview_state (фаза, кнопки с координатами, меняется ли картинка). Меню, нарисованное на холсте (кнопок как элементов нет), открывай по скриншоту через preview_click по координатам или preview_key (Enter, Space). Всегда смотри на сам скриншот: приложение угадывает экран по тексту и может ошибиться.',
+  '- Скриншот можно ограничить: selector (например "#menu", "canvas") или область x, y, w, h. Когда в консоли появляется ошибка, приложение само прикладывает скриншот экрана. После правок или коммита обновляй страницу через preview_reload.',
   '- Не ходи по кругу: одну и ту же проблему пробуй исправить не больше 2 раз. Если не вышло, остановись и честно расскажи пользователю, что видишь и что не получилось.',
   '- В конце ответа 2–4 предложения: что сделано и как проверено. Если что-то не удалось проверить, скажи честно.'
 ].join('\n');
@@ -1383,7 +1447,7 @@ function sysPrompt(tab,tools){
   let s=S.prefs.system||'';
   if(tools){const F=WS(tab),k=wsList(tab);
     const gu=gameUrl();
-    s=AGENT+(gu?'\nСсылка на игру пользователя (GitHub Pages): '+gu+'. Открывай её через preview_game: это опубликованная версия игры, в ней можно ходить (preview_key), кликать (preview_click), читать состояние (preview_eval) и делать скриншоты. Игра грузится не мгновенно: приложение само дожидается загрузки.':'')+(GH.tok()?GHPROMPT:'\nGitHub не подключён: если пользователь просит работать с репозиторием, скажи, что нужно ввести токен в Настройки → Модель → GitHub.')+'\n\nФайлы проекта сейчас: '+(k.length?k.map(p=>p+' ('+nLines(F[p])+' стр)').join(', '):'пусто')+'.'+(s?'\n\n'+s:'');}
+    s=AGENT+(gu?'\nСсылка на игру пользователя (GitHub Pages): '+gu+'. Открывай её через preview_game: это опубликованная версия игры, в ней можно ходить (preview_key), кликать (preview_click), читать состояние (preview_eval) и делать скриншоты. Игра грузится не мгновенно: приложение само дожидается загрузки, умеет нажимать «Играть» в меню и открывать настройки (выбирай stage по тому, что ты менял).':'')+(GH.tok()?GHPROMPT:'\nGitHub не подключён: если пользователь просит работать с репозиторием, скажи, что нужно ввести токен в Настройки → Модель → GitHub.')+'\n\nФайлы проекта сейчас: '+(k.length?k.map(p=>p+' ('+nLines(F[p])+' стр)').join(', '):'пусто')+'.'+(s?'\n\n'+s:'');}
   return s;
 }
 
@@ -1391,7 +1455,53 @@ function sysPrompt(tab,tools){
 const PV={logs:[],seen:0,w:960,h:600,entry:null,loaded:false};
 const pvFrame=()=>$('pvf');
 window.addEventListener('message',e=>{const d=e.data;if(d&&d.__pv){PV.logs.push({l:d.l,m:String(d.m).slice(0,500)});if(PV.logs.length>300){PV.logs.shift();PV.seen=Math.max(0,PV.seen-1);}}});
-const HOOK="(function(){function f(a){return Array.prototype.map.call(a,function(x){try{return typeof x==='string'?x:(x instanceof Error?(x.stack||x.message):JSON.stringify(x))}catch(e){return String(x)}}).join(' ')}function P(l,m){try{parent.postMessage({__pv:1,l:l,m:m},'*')}catch(e){}}['log','info','warn','error','debug'].forEach(function(k){var o=console[k];console[k]=function(){P(k,f(arguments));try{o.apply(console,arguments)}catch(e){}}});addEventListener('error',function(e){P('error',(e.message||'error')+' @'+String(e.filename||'').split('/').pop()+':'+e.lineno)});addEventListener('unhandledrejection',function(e){P('error','Promise: '+(e.reason&&e.reason.stack||e.reason))});var W=window;W.__pvP=0;var of=W.fetch;if(of)W.fetch=function(){W.__pvP++;var p;try{p=of.apply(this,arguments)}catch(e){W.__pvP=Math.max(0,W.__pvP-1);throw e}var d=function(){W.__pvP=Math.max(0,W.__pvP-1)};p.then(d,d);return p};var xs=XMLHttpRequest.prototype.send;XMLHttpRequest.prototype.send=function(){var x=this,dn=false;W.__pvP++;x.addEventListener('loadend',function(){if(!dn){dn=true;W.__pvP=Math.max(0,W.__pvP-1)}});return xs.apply(this,arguments)}})();";
+const HOOK0="(function(){function f(a){return Array.prototype.map.call(a,function(x){try{return typeof x==='string'?x:(x instanceof Error?(x.stack||x.message):JSON.stringify(x))}catch(e){return String(x)}}).join(' ')}function P(l,m){try{parent.postMessage({__pv:1,l:l,m:m},'*')}catch(e){}}['log','info','warn','error','debug'].forEach(function(k){var o=console[k];console[k]=function(){P(k,f(arguments));try{o.apply(console,arguments)}catch(e){}}});addEventListener('error',function(e){P('error',(e.message||'error')+' @'+String(e.filename||'').split('/').pop()+':'+e.lineno)});addEventListener('unhandledrejection',function(e){P('error','Promise: '+(e.reason&&e.reason.stack||e.reason))});var W=window;W.__pvP=0;var of=W.fetch;if(of)W.fetch=function(){W.__pvP++;var p;try{p=of.apply(this,arguments)}catch(e){W.__pvP=Math.max(0,W.__pvP-1);throw e}var d=function(){W.__pvP=Math.max(0,W.__pvP-1)};p.then(d,d);return p};var xs=XMLHttpRequest.prototype.send;XMLHttpRequest.prototype.send=function(){var x=this,dn=false;W.__pvP++;x.addEventListener('loadend',function(){if(!dn){dn=true;W.__pvP=Math.max(0,W.__pvP-1)}});return xs.apply(this,arguments)}})();";
+
+function pvHookMain(){
+  var W=window;W.__pvW=0;
+  try{var WA=W.WebAssembly;if(WA){['instantiate','instantiateStreaming','compile','compileStreaming'].forEach(function(k){var o=WA[k];if(!o)return;
+    WA[k]=function(){W.__pvW++;var p;try{p=o.apply(this,arguments);}catch(e){W.__pvW=Math.max(0,W.__pvW-1);throw e;}
+      var d=function(){W.__pvW=Math.max(0,W.__pvW-1);};p.then(d,d);return p;};});}}catch(e){}
+  var raf=W.requestAnimationFrame;W.__pvRaf0=raf?raf.bind(W):null;W.__pvRaf=0;
+  if(raf)W.requestAnimationFrame=function(cb){return raf.call(W,function(t){W.__pvRaf++;return cb(t);});};
+  W.__pvSig=function(){return new Promise(function(res){
+    var done=false;
+    function run(){if(done)return;done=true;
+      try{
+        var cs=[].slice.call(document.querySelectorAll('canvas')).filter(function(c){var r=c.getBoundingClientRect();return r.width>40&&r.height>40;});
+        if(!cs.length)return res({n:0});
+        cs.sort(function(a,b){var A=a.getBoundingClientRect(),B=b.getBoundingClientRect();return B.width*B.height-A.width*A.height;});
+        var N=32,t=document.createElement('canvas');t.width=N;t.height=N;var g=t.getContext('2d'),v=[],sum=0,al=0,mn=255,mx=0;
+        try{g.drawImage(cs[0],0,0,N,N);var d=g.getImageData(0,0,N,N).data;
+          for(var i=0;i<d.length;i+=4){var l=Math.round(0.3*d[i]+0.59*d[i+1]+0.11*d[i+2]);v.push(l);sum+=l;al+=d[i+3];if(l<mn)mn=l;if(l>mx)mx=l;}
+        }catch(e){return res({n:cs.length,err:1});}
+        res({n:cs.length,v:v,mean:sum/v.length,alpha:al/v.length,range:mx-mn});
+      }catch(e){res({n:0,err:1});}
+    }
+    try{(W.__pvRaf0||W.requestAnimationFrame)(run);}catch(e){}
+    setTimeout(run,600);
+  });};
+  W.__pvScan=function(){
+    var out={btn:[],txt:[],range:0,canvas:0,w:innerWidth,h:innerHeight};
+    function vis(el){var cs=getComputedStyle(el);if(cs.display==='none'||cs.visibility==='hidden'||+cs.opacity<0.05)return null;
+      var r=el.getBoundingClientRect();if(r.width<6||r.height<6||r.bottom<=0||r.right<=0||r.left>=innerWidth||r.top>=innerHeight)return null;return r;}
+    function T(el){return (el.innerText||el.value||el.getAttribute('aria-label')||el.title||'').replace(/\s+/g,' ').trim();}
+    out.canvas=document.querySelectorAll('canvas').length;
+    var all=document.body?document.body.querySelectorAll('*'):[],n=Math.min(all.length,5000),seen=[];
+    for(var i=0;i<n;i++){var el=all[i],tag=el.tagName;
+      if(/^(SCRIPT|STYLE|NOSCRIPT|META|LINK|HEAD|CANVAS|SVG|PATH|BR)$/i.test(tag))continue;
+      if(tag==='INPUT'&&el.type==='range'){if(vis(el))out.range++;continue;}
+      var clk=/^(BUTTON|A|SUMMARY)$/.test(tag)||(tag==='INPUT'&&/^(button|submit)$/i.test(el.type))||el.getAttribute('role')==='button'||el.hasAttribute('onclick')||(el.tabIndex>=0&&!/^(BODY|INPUT|TEXTAREA|SELECT)$/.test(tag));
+      var cur=false;if(!clk){try{cur=getComputedStyle(el).cursor==='pointer';}catch(e){}}
+      if(clk||cur){var r=vis(el);if(!r)continue;var t=T(el);if(!t||t.length>40)continue;seen.push({el:el,t:t,r:r});}
+      else if(el.childElementCount===0){var r2=vis(el);if(!r2)continue;var t2=T(el);if(t2&&t2.length<=90&&out.txt.length<60)out.txt.push(t2);}
+    }
+    var keep=seen.filter(function(a){return !seen.some(function(b){return b!==a&&a.el.contains(b.el)&&b.t===a.t;});});
+    keep.slice(0,50).forEach(function(k){out.btn.push({t:k.t,x:Math.round(k.r.left+k.r.width/2),y:Math.round(k.r.top+k.r.height/2),w:Math.round(k.r.width),h:Math.round(k.r.height)});});
+    return out;
+  };
+}
+const HOOK=HOOK0+'('+pvHookMain.toString()+')();';
 function buildPage(tab,entry){
   const F=WS(tab);let html=F[entry];
   if(html==null)throw new Error('Нет файла '+entry);
@@ -1421,6 +1531,7 @@ function pvBusy(){
   try{
     if(d.readyState!=='complete')return 'страница ещё загружается';
     if(w.__pvP>0)return 'идут сетевые запросы ('+w.__pvP+')';
+    if(w.__pvW>0)return 'компилируется wasm ('+w.__pvW+')';
     if([...d.images].some(i=>!i.complete))return 'грузятся картинки';
     if(d.fonts&&d.fonts.status==='loading')return 'грузятся шрифты';
     try{const rs=w.performance.getEntriesByType('resource');if(rs.length){const last=Math.max(...rs.slice(-40).map(x=>x.responseEnd||0));if(w.performance.now()-last<600)return 'подгружаются файлы игры';}}catch(e){}
@@ -1442,6 +1553,7 @@ async function pvWaitReady(max){
   max=clamp(+max||25000,1000,60000);const t0=Date.now();let since=0,why='',ok=false;
   while(Date.now()-t0<max){
     why=pvBusy();
+    if(!why&&Date.now()-t0<6000&&Date.now()-(PV.tLoad||0)<40000&&await pvBlank())why='холст пока пустой (игра ещё ничего не нарисовала)';
     if(why)since=0;else{if(!since)since=Date.now();if(Date.now()-since>=700){ok=true;break;}}
     await sleep(250);
   }
@@ -1461,14 +1573,14 @@ async function pvLoad(tab,a){
   if(!entry)throw new Error('В проекте нет HTML-файла. Создай index.html');
   if(a&&a.width)PV.w=clamp(+a.width||PV.w,320,1920);
   if(a&&a.height)PV.h=clamp(+a.height||PV.h,240,1200);
-  PV.entry=entry;PV.url=null;PV.remote=false;PV.logs=[];PV.seen=0;PV.waits=0;PV.loaded=false;
+  PV.entry=entry;PV.url=null;PV.remote=false;PV.logs=[];PV.seen=0;PV.waits=0;PV.loaded=false;PV.tLoad=Date.now();
   const html=buildPage(tab,entry);const f=pvFrame();
   fit();
   const loaded=new Promise(r=>{const t=setTimeout(()=>r(false),30000);f.onload=()=>{clearTimeout(t);r(true);};});
   f.removeAttribute('src');f.srcdoc=html;
   const ok=await loaded;
   PV.loaded=ok;$('pvInfo').textContent=entry+' · '+PV.w+'×'+PV.h;renderPrevBar();
-  PV.r=await pvWaitReady(25000);
+  PV.r=pvStage(a)==='loading'?{ready:false,ms:0,why:'снимок во время загрузки'}:await pvWaitReady(25000);
   return ok;
 }
 // Опубликованная игра по ссылке (GitHub Pages): грузим страницу, подставляем <base>, чтобы все файлы игры брались с её сайта
@@ -1484,7 +1596,7 @@ async function pvLoadUrl(url,a){
   if(!/^https?:\/\//i.test(url))throw new Error('Нужна ссылка вида https://логин.github.io/игра/');
   if(a&&a.width)PV.w=clamp(+a.width||PV.w,320,1920);
   if(a&&a.height)PV.h=clamp(+a.height||PV.h,240,1200);
-  PV.entry=null;PV.url=url;PV.remote=false;PV.logs=[];PV.seen=0;PV.waits=0;PV.loaded=false;
+  PV.entry=null;PV.url=url;PV.remote=false;PV.logs=[];PV.seen=0;PV.waits=0;PV.loaded=false;PV.tLoad=Date.now();
   const f=pvFrame();fit();
   let html=null,err='';
   try{const res=await fetch(url+(url.includes('?')?'&':'?')+'_pv='+Date.now(),{cache:'no-store'});if(!res.ok)throw new Error('ответ сайта '+res.status);html=await res.text();}catch(e){err=e.message||String(e);}
@@ -1502,7 +1614,7 @@ async function pvLoadUrl(url,a){
   }else{PV.remote=true;f.removeAttribute('srcdoc');f.src=url;}
   const ok=await loaded;
   PV.loaded=ok;$('pvInfo').textContent=url+' · '+PV.w+'×'+PV.h+(PV.remote?' · внешняя страница':'');renderPrevBar();
-  PV.r=await pvWaitReady(25000);
+  PV.r=pvStage(a)==='loading'?{ready:false,ms:0,why:'снимок во время загрузки'}:await pvWaitReady(25000);
   if(!ok&&!PV.remote)throw new Error('Страница игры не загрузилась за 30 с'+(err?' ('+err+')':'')+'. Проверьте ссылку и что GitHub Pages включён.');
   return ok;
 }
@@ -1585,6 +1697,169 @@ async function pvEval(code){
   let s;try{s=r===undefined?'undefined':JSON.stringify(r,null,1);}catch(e){s=String(r);}
   return (s||String(r)).slice(0,4000);
 }
+
+// ---------- Состояние игры: загрузка / меню / настройки / игра ----------
+const RX_PLAY=/^(играть|начать( игру)?|начало|старт|новая игра|продолжить|в бой|поехали|вперёд|вперед|запустить|одиночная( игра)?|play( now| game)?|start( game)?|new game|continue|resume|begin|enter( game)?|launch|let'?s go|single ?player)$/i;
+const RX_SET=/настройк|параметр|опци|settings|options|preferences|config/i;
+const RX_BACK=/^(назад|back|закрыть|close|вернуться|в меню|main menu|menu|меню|ok|ок|готово|done|apply|применить|сохранить|save)\b/i;
+const RX_NOGO=/выход|выйти|quit|exit|credits|титры|об игре|about|магазин|shop|store|donate|rate|оцен/i;
+const RX_PRESS=/(нажм|press|tap|click|кликн|коснит).*(любую|any|клавиш|key|start|play|начать|играть|enter|space|пробел|экран|screen)|any key|любая клавиша/i;
+const RX_SETCUE=/громкость|volume|звук|sound|музык|music|графика|graphics|качество|quality|управление|controls|чувствительность|sensitivity|язык|language|fov|разрешение|resolution|полноэкран|fullscreen|vsync/i;
+const RX_PCT=/(^|\s)\d{1,3}\s?%/;
+const MOVE_THR=0.001;
+const PHASE_RU={loading:'загрузка',menu:'главное меню',settings:'настройки',game:'сама игра',unknown:'не определено'};
+function pvStage(a){
+  const s=String((a&&(a.stage||a.goal))||'').toLowerCase().trim();
+  if(!s)return 'auto';
+  if(/load|загруз/.test(s))return 'loading';
+  if(/sett|option|настр|парам/.test(s))return 'settings';
+  if(/menu|меню/.test(s))return 'menu';
+  if(/raw|none|как есть|сразу/.test(s))return 'raw';
+  return 'game';
+}
+function pvHasCanvas(){try{return !!pvFrame().contentDocument.querySelector('canvas');}catch(e){return false;}}
+async function pvBlank(){
+  const w=pvFrame().contentWindow;if(!w||!w.__pvSig)return false;
+  try{const x=await w.__pvSig();return !!(x&&x.n&&x.v&&(x.alpha<8||(x.range<3&&x.mean<8)));}catch(e){return false;}
+}
+async function pvMotion(){
+  const w=pvFrame().contentWindow;if(!w||!w.__pvSig)return null;
+  try{
+    const a=await w.__pvSig();await sleep(450);const b=await w.__pvSig();
+    if(!a||!b||!a.n)return {n:0};
+    if(!a.v||!b.v)return {n:a.n,diff:null,blank:false};
+    let d=0;for(let i=0;i<a.v.length;i++)if(Math.abs(a.v[i]-b.v[i])>10)d++;d=d/a.v.length;
+    return {n:a.n,diff:d,mean:b.mean,range:b.range,blank:b.alpha<8||(b.range<3&&b.mean<8)};
+  }catch(e){return null;}
+}
+function pvScan(){const w=pvFrame().contentWindow;try{return w&&w.__pvScan?w.__pvScan():null;}catch(e){return null;}}
+function pvState(){
+  const busy=pvBusy(),sc=pvScan(),st={busy,scan:sc,phase:'unknown',why:[],low:false};
+  if(!sc){if(busy){st.phase='loading';st.why.push(busy);}return st;}
+  const txt=sc.txt.concat(sc.btn.map(b=>b.t));
+  const loadTxt=sc.txt.find(t=>LOADER_TXT.test(t)||(RX_PCT.test(t)&&t.length<20));
+  const play=sc.btn.find(b=>RX_PLAY.test(b.t)),sett=sc.btn.find(b=>RX_SET.test(b.t)&&!RX_PLAY.test(b.t));
+  const setCues=txt.filter(t=>RX_SETCUE.test(t)).length+(sc.range?2:0),press=sc.txt.find(t=>RX_PRESS.test(t));
+  if(busy){st.phase='loading';st.why.push(busy);}
+  else if(loadTxt&&!play){st.phase='loading';st.why.push('на экране «'+loadTxt.slice(0,40)+'»');}
+  else if(setCues>=2){st.phase='settings';st.why.push('видны настройки ('+setCues+' признака)');}
+  else if(play||press||(sett&&sc.btn.length>=2)){st.phase='menu';st.why.push(play?'кнопка «'+play.t+'»':press?'надпись «'+press.slice(0,40)+'»':'кнопки меню');}
+  else if(sc.canvas){st.phase='game';st.why.push('есть холст, кнопок меню и загрузки нет');st.low=!sc.btn.length&&!sc.txt.length;}
+  return st;
+}
+function pvClickAt(x,y){
+  const f=pvFrame(),w=f.contentWindow,d=f.contentDocument;if(!d)throw new Error('Превью не запущено');
+  const el=d.elementFromPoint(x,y)||d.body;
+  const o={bubbles:true,cancelable:true,clientX:x,clientY:y,view:w,button:0};
+  ['pointerdown','mousedown','pointerup','mouseup','click'].forEach(t=>{
+    el.dispatchEvent(t.startsWith('pointer')?new w.PointerEvent(t,Object.assign({pointerType:'mouse',isPrimary:true},o)):new w.MouseEvent(t,o));});
+  return el;
+}
+async function pvKeyTap(k,hold){fireKey('keydown',k);await sleep(hold||120);fireKey('keyup',k);}
+async function pvEvalVal(code){
+  const w=pvFrame().contentWindow;if(!w||!PV.loaded)throw new Error('Превью не запущено');
+  let fn;try{fn=new w.Function('return ('+code+'\n)');}catch(e){fn=new w.Function('return (async()=>{'+code+'\n})()');}
+  let r=await fn();if(r&&typeof r.then==='function')r=await r;return r;
+}
+// Довести игру до нужного экрана: загрузка → меню → (настройки) → игра
+async function pvGoto(stageIn,maxMs){
+  const stage=pvStage({stage:stageIn}),log=[],t0=Date.now(),lim=clamp(+maxMs||50000,5000,120000);
+  if(PV.remote||stage==='raw')return {stage,phase:'unknown',ok:true,log};
+  if(stage==='loading')return {stage,phase:'loading',ok:true,log:['снимок во время загрузки']};
+  const r=await pvWaitReady(25000);
+  log.push(r.ready?'загрузка завершена'+(r.ms>1500?' за '+(r.ms/1000).toFixed(1)+' с':''):'ещё грузится: '+r.why);
+  let st=pvState(),acts=0,last='',rep=0,tries=0,watch=0,lowMenu=false;
+  const act=async(kind,arg,label)=>{
+    const lb=label||(kind==='key'?'нажал '+arg:kind==='clickc'?'клик по центру экрана':'нажал «'+arg.t+'»');
+    if(lb===last){if(++rep>=2){log.push('одно и то же действие не помогает: «'+lb+'»');return false;}}else{rep=0;last=lb;}
+    acts++;log.push(lb);
+    if(kind==='key')await pvKeyTap(arg);else if(kind==='clickc')pvClickAt(Math.round(PV.w/2),Math.round(PV.h/2));else pvClickAt(arg.x,arg.y);
+    await sleep(900);await pvWaitReady(8000);return true;
+  };
+  while(Date.now()-t0<lim){
+    st=pvState();const sc=st.scan||{btn:[],txt:[],canvas:0},ph=st.phase;
+    const find=(re,no)=>sc.btn.find(b=>re.test(b.t)&&!(no&&no.test(b.t)));
+    if(ph==='loading'){await sleep(500);continue;}
+    if(ph==='game'&&st.low&&stage!=='game'){
+      const m=await pvMotion();
+      if(m&&m.blank&&Date.now()-t0<lim-3000){await sleep(800);continue;}
+      if(m&&m.diff!=null&&m.diff>=MOVE_THR){if(!watch)watch=Date.now();if(Date.now()-watch<8000&&Date.now()-t0<lim-3000){if(!log.includes('холст меняется: жду, не загрузка ли'))log.push('холст меняется: жду, не загрузка ли');continue;}}
+      else if(m&&m.diff!=null){lowMenu=true;log.push('холст статичен: похоже на меню (определено только по картинке)');break;}
+    }
+    if(acts>=10){log.push('слишком много действий, останавливаюсь');break;}
+    if(stage==='menu'){
+      if(ph==='menu')break;
+      if(ph==='settings'){const b=find(RX_BACK);if(b&&await act('click',b))continue;}
+      if(ph==='game'&&await act('key','Escape'))continue;
+      break;
+    }
+    if(stage==='settings'){
+      if(ph==='settings')break;
+      if(ph==='menu'){const b=find(RX_SET);if(b&&await act('click',b))continue;}
+      if(ph==='game'&&await act('key','Escape'))continue;
+      break;
+    }
+    // stage === 'game'
+    if(ph==='menu'){
+      const b=find(RX_PLAY,RX_NOGO)||sc.btn.find(x=>!RX_SET.test(x.t)&&!RX_NOGO.test(x.t)&&!RX_BACK.test(x.t));
+      if(b&&await act('click',b))continue;
+      if(sc.txt.some(t=>RX_PRESS.test(t))){if(await act('key','Enter')){await act('clickc');continue;}}
+      break;
+    }
+    if(ph==='settings'){const b=find(RX_BACK);if(b&&await act('click',b))continue;break;}
+    if(ph==='game'&&st.low){
+      const m=await pvMotion();
+      if(m&&m.blank&&Date.now()-t0<lim-3000){if(!log.includes('холст пустой, жду'))log.push('холст пустой, жду');await sleep(800);continue;}
+      const seq=['Enter','Space','center'];
+      if(m&&m.diff!=null&&m.diff<MOVE_THR&&tries<seq.length){
+        const k=seq[tries++];log.push('холст не меняется (меню или «нажмите клавишу»?)');
+        if(await act(k==='center'?'clickc':'key',k))continue;
+      }
+      if(m&&m.diff!=null&&m.diff>=MOVE_THR){
+        if(tries>0){log.push('после нажатия на холсте идёт движение: игра запущена');break;}
+        if(!watch)watch=Date.now();
+        if(Date.now()-watch<8000&&Date.now()-t0<lim-3000){if(!log.includes('холст меняется: проверяю, не загрузка ли'))log.push('холст меняется: проверяю, не загрузка ли');continue;}
+        log.push('на холсте постоянное движение (игра или анимация)');
+      }
+    }
+    break;
+  }
+  st=pvState();
+  const want=stage,ok=st.phase===want||(lowMenu&&want==='menu');
+  return {stage,phase:st.phase,ok,log,low:st.low,why:st.why,lowMenu};
+}
+function gotoNote(g){
+  if(g.phase==='loading'&&g.stage!=='loading'){PV.waits=(PV.waits||0)+1;
+    return '⏳ Игра ещё грузится ('+(g.why&&g.why[0]||'')+'). Это НЕ ошибка в коде: не правь файлы из-за этого. Вызови preview_wait_for с phase:"'+(g.stage==='menu'?'menu':'game')+'" и timeout_ms:30000.'+(PV.waits>=3?' Ты уже ждал '+PV.waits+' раза подряд: если в консоли нет ошибок, остановись и скажи пользователю, что игра слишком долго грузится.':'');}
+  PV.waits=0;
+  const steps=g.log.length?g.log.join(' → '):'без действий';
+  let t='Автопилот (цель «'+g.stage+'»): '+steps+'. Сейчас: '+(g.lowMenu?'похоже на меню (по картинке)':PHASE_RU[g.phase]+(g.why&&g.why.length?' ('+g.why.join('; ')+')':''))+(g.ok?' ✔':' ✘ цель не достигнута: посмотри на скриншот и доведи сам (preview_click_text, preview_click, preview_key)')+'.';
+  if(g.low)t+='\nНа странице нет текста и кнопок (холст): экран определён неточно, ориентируйся по скриншоту.';
+  return t;
+}
+async function pvAfterLoad(a){
+  const s=pvStage(a);
+  if(PV.remote)return {note:'',stage:s};
+  if(s==='loading'){await sleep(500);const b=pvBusy();
+    return {note:'📸 Снимок сделан ВО ВРЕМЯ загрузки (stage=loading). '+(b?'Загрузка идёт: '+b+'.':'Кнопок и надписей загрузки в тексте страницы нет: если загрузка нарисована на холсте, она на скриншоте; если её там нет, она успела пройти — повтори preview_reload.'),stage:s};}
+  const eff=s==='auto'?(pvHasCanvas()?'game':'raw'):s;
+  if(eff==='raw')return {note:readyNote(PV.r),stage:eff};
+  const g=await pvGoto(eff);
+  return {note:gotoNote(g),stage:eff,g};
+}
+const selVisible=sel=>{try{const d=pvFrame().contentDocument,el=d.querySelector(sel);if(!el)return false;const w=pvFrame().contentWindow,cs=w.getComputedStyle(el),r=el.getBoundingClientRect();return cs.display!=='none'&&cs.visibility!=='hidden'&&r.width>2&&r.height>2;}catch(e){return false;}};
+async function pvStateText(){
+  const st=pvState(),m=await pvMotion(),sc=st.scan,w=pvFrame().contentWindow;
+  const L=['Экран: '+PHASE_RU[st.phase]+(st.why.length?' ('+st.why.join('; ')+')':'')];
+  if(sc&&sc.canvas){L.push('Холст: '+sc.canvas+' шт, '+(m?(m.blank?'пустой (ничего не нарисовано)':m.diff==null?'содержимое недоступно':m.diff>=MOVE_THR?'картинка меняется (идёт анимация или игра)':'картинка не меняется (статичный экран или зависание)'):'не удалось прочитать'));}
+  L.push('Сеть: запросов '+(w&&w.__pvP||0)+', wasm '+(w&&w.__pvW||0));
+  if(sc){L.push('Кнопки: '+(sc.btn.length?sc.btn.map(b=>'«'+b.t+'» ('+b.x+','+b.y+')').join(', '):'нет (если меню на холсте, смотри скриншот)'));
+    if(sc.txt.length)L.push('Тексты: '+sc.txt.slice(0,25).map(t=>'«'+t.slice(0,50)+'»').join(' '));
+    if(sc.range)L.push('Ползунков: '+sc.range);}
+  if(st.low)L.push('Определение неточное: DOM пустой, всё нарисовано на холсте.');
+  return L.join('\n');
+}
+
 async function execTool(tab,name,a){
   const F=WS(tab);
   const need=k=>{if(a[k]==null)throw new Error('Не хватает параметра '+k);return a[k];};
@@ -1613,22 +1888,80 @@ async function execTool(tab,name,a){
     case 'github_repos':case 'github_tree':case 'github_import':case 'github_commit':case 'github_runs':case 'github_run_log':case 'github_dispatch':case 'github_pages':return await ghTool(tab,name,a);
     case 'delete_file':{const p=normPath(need('path'));exist(p);delete F[p];afterFiles();return 'Удалено '+p+'.';}
     case 'preview_open':{
-      const ok=await pvLoad(tab,a);
-      const t=(ok?'Страница открыта: ':'Загрузка не завершилась за 30 с: ')+PV.entry+', '+PV.w+'×'+PV.h+'.\n'+readyNote(PV.r)+'\nКонсоль:\n'+logsText();
+      const ok=await pvLoad(tab,a),af=await pvAfterLoad(a);
+      const t=(ok?'Страница открыта: ':'Загрузка не завершилась за 30 с: ')+PV.entry+', '+PV.w+'×'+PV.h+'.\n'+af.note+'\nКонсоль:\n'+logsText();
       return pvShotOnly(t);}
     case 'preview_game':{
       let u=a.url?String(a.url).trim():gameUrl();
       if(!u)throw new Error('Ссылка на игру не задана: попроси пользователя вписать её в Настройки → Подключения → GitHub → «Ссылка на игру» (или передай url).');
       if(a.path){try{u=new URL(String(a.path),u).href;}catch(e){}}
-      const ok=await pvLoadUrl(u,a);
-      const t='Игра открыта по ссылке '+u+(PV.remote?' (внешняя страница: управлять и снимать экран нельзя)':'')+', '+PV.w+'×'+PV.h+'.\n'+readyNote(PV.r)+'\nКонсоль:\n'+logsText();
+      const ok=await pvLoadUrl(u,a),af=await pvAfterLoad(a);
+      const t='Игра открыта по ссылке '+u+(PV.remote?' (внешняя страница: управлять и снимать экран нельзя)':'')+', '+PV.w+'×'+PV.h+'.\n'+(af.note||readyNote(PV.r))+'\nКонсоль:\n'+logsText();
       return PV.remote?t:pvShotOnly(t);}
-    case 'preview_screenshot':{const part=a.selector?' (элемент '+a.selector+')':(+a.w>0&&+a.h>0?' (область '+(+a.x||0)+','+(+a.y||0)+' '+a.w+'×'+a.h+')':'');
-      return withShot('Скриншот '+PV.w+'×'+PV.h+part+'.\nКонсоль:\n'+logsText(),true,undefined,a);}
+    case 'preview_screenshot':{
+      let pre='';if(a.stage&&pvStage(a)!=='auto'&&!PV.remote){pre=gotoNote(await pvGoto(a.stage))+'\n';}
+      const part=a.selector?' (элемент '+a.selector+')':(+a.w>0&&+a.h>0?' (область '+(+a.x||0)+','+(+a.y||0)+' '+a.w+'×'+a.h+')':'');
+      return withShot(pre+'Скриншот '+PV.w+'×'+PV.h+part+'.\nКонсоль:\n'+logsText(),true,undefined,a);}
     case 'preview_reload':{
-      let ok;if(PV.url)ok=await pvLoadUrl(PV.url,a);else if(PV.entry)ok=await pvLoad(tab,{entry:PV.entry,width:a.width,height:a.height});else{const gu=gameUrl();if(!gu)throw new Error('Нечего обновлять: превью ещё не запускали. Вызови preview_open или preview_game.');ok=await pvLoadUrl(gu,a);}
-      const t='Страница обновлена: '+(PV.url||PV.entry)+'.\n'+readyNote(PV.r)+'\nКонсоль:\n'+logsText();
+      let ok;if(PV.url)ok=await pvLoadUrl(PV.url,a);else if(PV.entry)ok=await pvLoad(tab,{entry:PV.entry,width:a.width,height:a.height,stage:a.stage});else{const gu=gameUrl();if(!gu)throw new Error('Нечего обновлять: превью ещё не запускали. Вызови preview_open или preview_game.');ok=await pvLoadUrl(gu,a);}
+      const af=await pvAfterLoad(a);
+      const t='Страница обновлена: '+(PV.url||PV.entry)+'.\n'+(af.note||readyNote(PV.r))+'\nКонсоль:\n'+logsText();
       return PV.remote?t:pvShotOnly(t);}
+    case 'preview_state':{
+      if(PV.remote)throw new Error(REMOTE_MSG);if(!PV.loaded)throw new Error('Превью не запущено: вызови preview_open или preview_game');
+      const t=await pvStateText();return a.screenshot?pvShotOnly(t):t;}
+    case 'preview_goto':{
+      if(PV.remote)throw new Error(REMOTE_MSG);if(!PV.loaded)throw new Error('Превью не запущено: вызови preview_open или preview_game');
+      const g=await pvGoto(need('stage'));const t=gotoNote(g)+'\nКонсоль:\n'+logsText();
+      return a.screenshot===false?t:pvShotOnly(t);}
+    case 'preview_wait_for':{
+      if(PV.remote)throw new Error(REMOTE_MSG);if(!PV.loaded)throw new Error('Превью не запущено: вызови preview_open или preview_game');
+      const to=clamp(+a.timeout_ms||20000,1000,60000),t0=Date.now(),want=a.phase?(pvStage({stage:a.phase})):null;let hit=false,st=null,why='';
+      while(Date.now()-t0<to){
+        st=pvState();const sc=st.scan||{btn:[],txt:[]},all=sc.txt.concat(sc.btn.map(b=>b.t)).join('\n').toLowerCase();
+        let okc=true,any=false;
+        if(want){any=true;okc=okc&&st.phase===(want==='raw'?'game':want);}
+        if(a.text){any=true;okc=okc&&all.includes(String(a.text).toLowerCase());}
+        if(a.gone_text){any=true;okc=okc&&!all.includes(String(a.gone_text).toLowerCase());}
+        if(a.selector){any=true;okc=okc&&selVisible(String(a.selector));}
+        if(a.gone_selector){any=true;okc=okc&&!selVisible(String(a.gone_selector));}
+        if(a.js){any=true;try{okc=okc&&!!(await pvEvalVal(String(a.js)));}catch(e){okc=false;why=e.message;}}
+        if(!any)okc=!st.busy;
+        if(okc){hit=true;break;}
+        await sleep(400);
+      }
+      st=pvState();
+      const t=(hit?'✔ Дождался ('+((Date.now()-t0)/1000).toFixed(1)+' с). ':'✘ Не дождался за '+Math.round(to/1000)+' с. ')+'Сейчас: '+PHASE_RU[st.phase]+(st.why.length?' ('+st.why.join('; ')+')':'')+(why?'\nОшибка js: '+why:'')+'\nКонсоль:\n'+logsText();
+      return a.screenshot?pvShotOnly(t):t;}
+    case 'preview_click_text':{
+      if(PV.remote)throw new Error(REMOTE_MSG);if(!PV.loaded)throw new Error('Превью не запущено: вызови preview_open или preview_game');
+      const q=String(need('text')).trim(),mm=q.match(/^\/(.+)\/([a-z]*)$/);let re=null;if(mm){try{re=new RegExp(mm[1],mm[2]||'i');}catch(e){}}
+      const sc=pvScan();if(!sc)throw new Error('Не удалось прочитать страницу');
+      const list=sc.btn.filter(b=>re?re.test(b.t):b.t.toLowerCase().includes(q.toLowerCase())),b=list[+a.index||0];
+      if(!b)throw new Error('На экране нет кнопки «'+q+'». Сейчас видны: '+(sc.btn.length?sc.btn.map(x=>'«'+x.t+'»').join(', '):'кнопок нет (если меню нарисовано на холсте, смотри скриншот и кликай preview_click по координатам)'));
+      pvClickAt(b.x,b.y);await sleep(700);await pvWaitReady(8000);
+      const st=pvState();
+      return withShot('Нажал «'+b.t+'» ('+b.x+','+b.y+'). Теперь: '+PHASE_RU[st.phase]+(st.why.length?' ('+st.why.join('; ')+')':'')+'\nКонсоль:\n'+logsText(),a.screenshot||PV.newErr);}
+    case 'preview_sequence':{
+      if(PV.remote)throw new Error(REMOTE_MSG);if(!PV.loaded)throw new Error('Превью не запущено: вызови preview_open или preview_game');
+      const steps=Array.isArray(a.steps)?a.steps.slice(0,30):[];if(!steps.length)throw new Error('steps пустой');
+      const out=[];
+      for(let i=0;i<steps.length;i++){
+        const s1=steps[i]||{},n=(i+1)+'. ';
+        try{
+          if(s1.keys!=null){const ks=(Array.isArray(s1.keys)?s1.keys:[s1.keys]).map(String);ks.forEach(k=>fireKey('keydown',k));await sleep(clamp(+s1.hold_ms||150,20,10000));ks.forEach(k=>fireKey('keyup',k));await sleep(100);out.push(n+'клавиши '+ks.join('+')+(s1.hold_ms?' '+s1.hold_ms+' мс':''));}
+          else if(Array.isArray(s1.click)){const el=pvClickAt(+s1.click[0],+s1.click[1]);await sleep(250);out.push(n+'клик '+s1.click[0]+','+s1.click[1]+' по <'+el.tagName.toLowerCase()+'>');}
+          else if(s1.click_text){const q=String(s1.click_text).toLowerCase(),sc=pvScan(),b=sc&&sc.btn.find(x=>x.t.toLowerCase().includes(q));
+            if(!b)throw new Error('нет кнопки «'+s1.click_text+'»');pvClickAt(b.x,b.y);await sleep(500);await pvWaitReady(6000);out.push(n+'нажал «'+b.t+'»');}
+          else if(Array.isArray(s1.look)){const f=pvFrame(),w=f.contentWindow,d=f.contentDocument,cs=[...d.querySelectorAll('canvas')].sort((p,q)=>q.width*q.height-p.width*p.height),el=cs[0]||d.body;
+            [el,d].forEach(t=>t.dispatchEvent(new w.MouseEvent('mousemove',{bubbles:true,clientX:PV.w/2+(+s1.look[0]||0),clientY:PV.h/2+(+s1.look[1]||0),movementX:+s1.look[0]||0,movementY:+s1.look[1]||0,view:w})));
+            await sleep(200);out.push(n+'поворот мыши '+s1.look.join(','));}
+          else if(s1.wait_ms!=null){await sleep(clamp(+s1.wait_ms,20,10000));out.push(n+'ждал '+s1.wait_ms+' мс');}
+          else if(s1.eval){const v=await pvEvalVal(String(s1.eval));let j;try{j=JSON.stringify(v);}catch(e){j=String(v);}out.push(n+'eval → '+String(j).slice(0,300));}
+          else out.push(n+'шаг не понят: '+JSON.stringify(s1).slice(0,80));
+        }catch(e){out.push(n+'ОШИБКА: '+e.message);break;}
+      }
+      return withShot('Шагов выполнено: '+out.length+' из '+steps.length+'\n'+out.join('\n')+'\nКонсоль:\n'+logsText(),a.screenshot!==false);}
     case 'preview_key':{
       const keys=Array.isArray(a.keys)?a.keys:[a.keys];if(!keys.length||keys[0]==null)throw new Error('keys пустой');
       if(PV.remote)throw new Error(REMOTE_MSG);
@@ -2343,6 +2676,94 @@ function renderModels(){
 }
 $('mfilter').addEventListener('input',renderModels);
 $('mitems').onclick=e=>{const b=e.target.closest('button');if(!b)return;$('s_model').value=b.dataset.m;flushSlot();setList(false);};
+
+// ---------- Каталог моделей («Подробнее») ----------
+const PROV=[
+  {k:'anthropic',n:'Anthropic',d:'anthropic.com',re:/claude|anthropic|fable|mythos/i},
+  {k:'openai',n:'OpenAI',d:'openai.com',re:/^(gpt|o\d|chatgpt|openai|text-|davinci|whisper|dall-e|codex)|gpt[-\d]/i},
+  {k:'google',n:'Google',d:'google.com',re:/gemini|gemma|palm|bard|imagen|veo|google/i},
+  {k:'xai',n:'xAI',d:'x.ai',re:/grok|xai/i},
+  {k:'meta',n:'Meta',d:'meta.com',re:/llama|meta-/i},
+  {k:'deepseek',n:'DeepSeek',d:'deepseek.com',re:/deepseek/i},
+  {k:'mistral',n:'Mistral',d:'mistral.ai',re:/mistral|mixtral|codestral|pixtral|ministral|magistral/i},
+  {k:'qwen',n:'Qwen',d:'qwenlm.ai',re:/qwen|qwq|alibaba/i},
+  {k:'moonshot',n:'Moonshot',d:'moonshot.ai',re:/kimi|moonshot/i},
+  {k:'zhipu',n:'Z.ai',d:'z.ai',re:/glm|zhipu/i},
+  {k:'minimax',n:'MiniMax',d:'minimax.io',re:/minimax|abab/i},
+  {k:'cohere',n:'Cohere',d:'cohere.com',re:/command|cohere/i},
+  {k:'perplexity',n:'Perplexity',d:'perplexity.ai',re:/sonar|perplexity/i},
+  {k:'microsoft',n:'Microsoft',d:'microsoft.com',re:/phi-|microsoft/i},
+  {k:'nvidia',n:'NVIDIA',d:'nvidia.com',re:/nemotron|nvidia/i},
+  {k:'amazon',n:'Amazon',d:'amazon.com',re:/nova-|titan|amazon/i}
+];
+const OTHER={k:'other',n:'Другие',d:''};
+function providerOf(m){
+  const byId=PROV.find(p=>p.re.test(m.id));if(byId)return byId;
+  const byOwner=m.owner&&PROV.find(p=>p.re.test(m.owner));if(byOwner)return byOwner;
+  return m.owner?{k:'other',n:m.owner,d:/\./.test(m.owner)?m.owner:''}:OTHER;
+}
+const isFree=m=>!!(m.free||(m.pin===0&&m.pout===0)||/(^|[:\-_/ (])free($|[:\-_) ])/i.test(m.id+' '+(m.name||'')));
+const fmtP=v=>v==null?'?':v===0?'$0':'$'+(+v.toFixed(v<1?3:2));
+const fmtCtx=n=>n>=1e6?(n/1e6).toFixed(n%1e6?1:0)+'M':n>=1000?Math.round(n/1000)+'K':String(n);
+const priceKey=m=>m.pin!=null?m.pin+(m.pout||0)/4:(m.pout!=null?m.pout:null);
+const hue=str=>{let h=0;for(const c of str)h=(h*31+c.charCodeAt(0))%360;return h;};
+const MC={f:'all',s:'site',q:'',est:false,note:''};
+function mcIcon(m,p){
+  const fav=p.d?'https://www.google.com/s2/favicons?domain='+encodeURIComponent(p.d)+'&sz=64':'';
+  let icon=m.icon;if(icon&&!/^(https?:|data:)/i.test(icon)){try{icon=new URL(icon,parseUrl(dSlot().url).base).href;}catch(e){icon='';}}
+  const L=((p.k==='other'?m.id:p.n)||'?')[0].toUpperCase(),H=hue(p.k==='other'?m.id:p.n),src=icon||fav;if(!src)return `<span class="mc-ic" style="background:hsl(${H},45%,45%)">${esc(L)}</span>`;
+  return `<span class="mc-ic" data-l="${esc(L)}" data-h="${H}"><img src="${esc(src)}" data-fb="${esc(icon?fav:'')}" alt="" loading="lazy" referrerpolicy="no-referrer"></span>`;
+}
+function renderCatalog(){
+  const cur=$('s_model').value.trim(),all=MLIST.map(id=>{const m=MMETA[id]||{id};return {m,p:providerOf(m),free:isFree(m)};});
+  const cnt={all:all.length,free:all.filter(x=>x.free).length},provs={};
+  all.forEach(x=>{(provs[x.p.k]=provs[x.p.k]||{p:x.p,n:0}).n++;});
+  const chips=[['all','Все',cnt.all]];if(cnt.free)chips.push(['free','Free',cnt.free]);
+  Object.values(provs).sort((a,b)=>(a.p.k==='other')-(b.p.k==='other')||b.n-a.n).forEach(v=>chips.push([v.p.k,v.p.n,v.n]));
+  if(!chips.some(c=>c[0]===MC.f))MC.f='all';
+  $('mcChips').innerHTML=chips.map(c=>`<button data-f="${esc(c[0])}" class="${MC.f===c[0]?'on':''}">${esc(c[1])}<small>${c[2]}</small></button>`).join('');
+  const q=MC.q.toLowerCase();
+  let l=all.filter(x=>(MC.f==='all'||(MC.f==='free'?x.free:x.p.k===MC.f))&&(!q||(x.m.id+' '+(x.m.name||'')+' '+x.p.n).toLowerCase().includes(q)));
+  if(MC.s==='az')l.sort((a,b)=>a.m.id.localeCompare(b.m.id));
+  else if(MC.s==='cheap'||MC.s==='exp'){
+    const k=x=>{const v=priceKey(x.m);return v==null?null:v;};
+    l.sort((a,b)=>{const A=k(a),B=k(b);if(A==null&&B==null)return 0;if(A==null)return 1;if(B==null)return -1;return MC.s==='cheap'?A-B:B-A;});}
+  const hasPrice=all.some(x=>x.m.pin!=null||x.m.pout!=null);
+  $('mcCount').textContent=MHOST+': '+(l.length!==all.length?l.length+' из ':'')+all.length+(MC.note?' · '+MC.note:(hasPrice?'':' · цены сайт не сообщает'));
+  $('mcList').innerHTML=l.length?l.map(x=>{const m=x.m,pr=(m.pin!=null||m.pout!=null)?`<i class="pr">${MC.est||m.est?'≈ ':''}вход ${fmtP(m.pin)} · выход ${fmtP(m.pout)} / 1M</i>`:(m.call!=null?`<i class="pr">≈ ${fmtP(m.call)} за запрос</i>`:'');
+    return `<button class="mc-card${m.id===cur?' on':''}" data-m="${esc(m.id)}">${mcIcon(m,x.p)}<span class="mc-bd"><b>${esc(m.name||m.id)}</b>${m.name&&m.name!==m.id?`<small>${esc(m.id)}</small>`:''}`+
+      `<span class="mc-meta"><i>${esc(x.p.n)}</i>${m.ctx?`<i>${fmtCtx(m.ctx)} контекст</i>`:''}${pr}${x.free?'<i class="fr">FREE</i>':''}</span></span></button>`;}).join(''):'<div class="mc-none">Ничего не найдено</div>';
+  $('mcList').querySelectorAll('.mc-ic img').forEach(im=>{im.onerror=()=>{const fb=im.dataset.fb;if(fb){im.dataset.fb='';im.src=fb;return;}
+    const sp=im.parentNode;sp.style.background='hsl('+sp.dataset.h+',45%,45%)';sp.textContent=sp.dataset.l;};});
+}
+async function fetchPricing(sl){
+  // сайты на New API / One API отдают таблицу цен отдельно; формула: коэффициент 1 = $2 за 1M входных токенов
+  try{
+    const u=new URL(parseUrl(sl.url).base).origin+'/api/pricing';
+    const res=await fetch(viaProxy(u,sl),{headers:{'Authorization':'Bearer '+sl.key,'Accept':'application/json'}});
+    if(!res.ok)return 0;const j=await res.json();const arr=Array.isArray(j.data)?j.data:(Array.isArray(j)?j:[]);let n=0;
+    arr.forEach(d=>{const id=d.model_name||d.model,m=MMETA[id];if(!m||m.pin!=null||m.pout!=null)return;
+      if(d.quota_type===1&&d.model_price!=null){m.call=+d.model_price;m.est=true;n++;return;}
+      const r=parseFloat(d.model_ratio);if(!isFinite(r))return;const c=parseFloat(d.completion_ratio);
+      m.pin=r*2;m.pout=r*2*(isFinite(c)&&c>0?c:1);m.est=true;n++;});
+    return n;
+  }catch(e){return 0;}
+}
+async function openCatalog(){
+  MC.f='all';MC.q='';MC.s='site';MC.note='';$('mcSearch').value='';$('mcSort').value='site';
+  renderCatalog();$('mcat').classList.remove('hidden');
+  const sl=dSlot();
+  if(!MLIST.some(id=>MMETA[id]&&(MMETA[id].pin!=null||MMETA[id].pout!=null))&&sl.key){
+    MC.note='ищу цены…';renderCatalog();
+    const n=await fetchPricing(sl);MC.note=n?'цены ≈ по данным сайта':'';renderCatalog();
+  }
+}
+$('mmore').onclick=openCatalog;
+$('mcBack').onclick=()=>$('mcat').classList.add('hidden');
+$('mcSearch').addEventListener('input',()=>{MC.q=$('mcSearch').value.trim();renderCatalog();});
+$('mcSort').onchange=()=>{MC.s=$('mcSort').value;renderCatalog();};
+$('mcChips').onclick=e=>{const b=e.target.closest('button');if(!b)return;MC.f=b.dataset.f;renderCatalog();};
+$('mcList').onclick=e=>{const b=e.target.closest('.mc-card');if(!b)return;$('s_model').value=b.dataset.m;flushSlot();$('mcat').classList.add('hidden');setList(false);toast('Выбрана модель '+b.dataset.m);};
 $('loadModels').onclick=async()=>{
   if(!$('f_models').classList.contains('hidden')){setList(false);return;}
   flushSlot();const sl=dSlot();if(!sl.key||!sl.url){toast('Сначала укажите адрес и ключ');return;}
